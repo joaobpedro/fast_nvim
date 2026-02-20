@@ -23,6 +23,9 @@ vim.o.number = true
 --  Experiment for yourself to see if you like it!
 vim.o.relativenumber = true
 
+-- no wrapping
+vim.opt.wrap = false
+
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
 
@@ -547,5 +550,5 @@ _G.MinimalStatusLine = function()
 
     return left .. "%=" .. right
 end
-
+vim.o.showmode = false
 vim.o.statusline = "%!v:lua.MinimalStatusLine()"
