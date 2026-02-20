@@ -147,12 +147,6 @@ vim.keymap.set('n', '<leader>wv', '<C-w>v', { noremap = true, desc = 'Split wind
 -- Navigate buffers using leader + directional keys
 vim.keymap.set('n', '<leader>bn', '<cmd>bnext<CR>', { noremap = true, silent = true, desc = 'Next Buffer' })
 vim.keymap.set('n', '<leader>bp', '<cmd>bprev<CR>', { noremap = true, silent = true, desc = 'Previous Buffer' })
--- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
--- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
--- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
--- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
--- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
-
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -171,7 +165,6 @@ vim.cmd("colorscheme naysayer")
 
 -- ------------------------------------------------
 -- ------------------------------------------------
--- import my custom functions
 local function toggle_markdown_smart()
     local line = vim.api.nvim_get_current_line()
     local is_empty = line:match("^%s*$") ~= nil
@@ -367,97 +360,6 @@ end, { desc = 'Fast Fuzzy Finder via CLI fzf' })
 
 -- Bind it to a keymap (e.g., <leader>f)
 vim.keymap.set('n', '<leader>.', '<cmd>FuzzyFind<CR>', { noremap = true, silent = true, desc = 'Fuzzy Find Files' })
-
-
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
--- vim.api.nvim_create_user_command('FuzzyBuffers', function()
---     -- Get the current working directory once, outside the loop
---     local cwd = vim.fn.getcwd() .. '/'
---     -- Escape special characters so we can use it safely in Lua's pattern matching
---     local cwd_esc = cwd:gsub("([^%w])", "%%%1") 
---
---     local bufs = vim.api.nvim_list_bufs()
---     local buf_names = {}
---
---     for _, buf in ipairs(bufs) do
---         -- 1. Use pure Lua (vim.bo) instead of vim.fn.buflisted to avoid Vimscript overhead
---         if vim.bo[buf].buflisted then
---             local name = vim.api.nvim_buf_get_name(buf)
---             if name ~= "" then
---                 -- 2. Use pure Lua string substitution instead of vim.fn.fnamemodify
---                 local rel_name = name:gsub('^' .. cwd_esc, '')
---                 table.insert(buf_names, rel_name)
---             end
---         end
---     end
---
---     if #buf_names == 0 then
---         print("No other buffers are currently open.")
---         return
---     end
---
---     local tmp_in = vim.fn.tempname()
---     local tmp_out = vim.fn.tempname()
---
---     -- 3. Write the entire list in one single I/O operation instead of a loop
---     local f_in = io.open(tmp_in, 'w')
---     if f_in then
---         f_in:write(table.concat(buf_names, '\n'))
---         f_in:close()
---     end
---
---     local buf_ui = vim.api.nvim_create_buf(false, true)
---     local width = math.floor(vim.o.columns * 0.8)
---     local height = math.floor(vim.o.lines * 0.8)
---     local col = math.floor((vim.o.columns - width) / 2)
---     local row = math.floor((vim.o.lines - height) / 2)
---
---     local win = vim.api.nvim_open_win(buf_ui, true, {
---         relative = 'editor',
---         width = width,
---         height = height,
---         col = col,
---         row = row,
---         style = 'minimal',
---         border = 'rounded'
---     })
---
---     -- Map <Esc><Esc> to force close the window
---     vim.keymap.set({'t', 'n'}, '<Esc><Esc>', '<cmd>close<CR>', { buffer = buf_ui, silent = true })
---
---     local cmd_string = string.format('fzf < %s > %s', tmp_in, tmp_out)
---     local cmd = {'sh', '-c', cmd_string}
---
---     vim.fn.termopen(cmd, {
---         on_exit = function()
---             if vim.api.nvim_win_is_valid(win) then
---                 vim.api.nvim_win_close(win, true)
---             end
---
---             if vim.fn.filereadable(tmp_out) == 1 then
---                 local f_out = io.open(tmp_out, 'r')
---                 if f_out then
---                     local selected = f_out:read('*l')
---                     f_out:close()
---
---                     if selected and selected ~= "" then
---                         vim.cmd('buffer ' .. vim.fn.fnameescape(selected))
---                     end
---                 end
---             end
---
---             vim.fn.delete(tmp_in)
---             vim.fn.delete(tmp_out)
---         end
---     })
---
---     vim.cmd('startinsert')
--- end, { desc = 'Fast Fuzzy Find Open Buffers' })
---
--- vim.keymap.set('n', '<leader>b', '<cmd>FuzzyBuffers<CR>', { noremap = true, silent = true, desc = 'Search Open Buffers' })
-
 
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
