@@ -80,16 +80,7 @@ vim.o.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
--- When jumping to the end of the file (G), automatically center the screen (zz)
-vim.keymap.set('n', 'G', 'Gzz', { noremap = true })
 
--- When doing half-page jumps down (<C-d>) or up (<C-u>), center the screen
-vim.keymap.set('n', '<C-d>', '<C-d>zz', { noremap = true })
-vim.keymap.set('n', '<C-u>', '<C-u>zz', { noremap = true })
-
--- When moving to the next search result (n) or previous (N), center the screen
-vim.keymap.set('n', 'n', 'nzz', { noremap = true })
-vim.keymap.set('n', 'N', 'Nzz', { noremap = true })
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
