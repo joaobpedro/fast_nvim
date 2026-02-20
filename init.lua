@@ -5,7 +5,12 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
+
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
+vim.opt.expandtab = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -88,17 +93,17 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Diagnostic Config & Keymaps
 -- See :help vim.diagnostic.Opts
 vim.diagnostic.config {
-  update_in_insert = false,
-  severity_sort = true,
-  float = { border = 'rounded', source = 'if_many' },
-  underline = { severity = vim.diagnostic.severity.ERROR },
+    update_in_insert = false,
+    severity_sort = true,
+    float = { border = 'rounded', source = 'if_many' },
+    underline = { severity = vim.diagnostic.severity.ERROR },
 
-  -- Can switch between these as you prefer
-  virtual_text = true, -- Text shows up at the end of the line
-  virtual_lines = false, -- Teest shows up underneath the line, with virtual lines
+    -- Can switch between these as you prefer
+    virtual_text = true, -- Text shows up at the end of the line
+    virtual_lines = false, -- Teest shows up underneath the line, with virtual lines
 
-  -- Auto open the float, so you can easily read the errors when jumping with `[d` and `]d`
-  jump = { float = true },
+    -- Auto open the float, so you can easily read the errors when jumping with `[d` and `]d`
+    jump = { float = true },
 }
 
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -149,9 +154,9 @@ vim.keymap.set('n', '<leader>wv', '<C-w>v', { noremap = true, desc = 'Split wind
 --  Try it with `yap` in normal mode
 --  See `:help vim.hl.on_yank()`
 vim.api.nvim_create_autocmd('TextYankPost', {
-  desc = 'Highlight when yanking (copying) text',
-  group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
-  callback = function() vim.hl.on_yank() end,
+    desc = 'Highlight when yanking (copying) text',
+    group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
+    callback = function() vim.hl.on_yank() end,
 })
 
 
@@ -162,29 +167,29 @@ vim.cmd("colorscheme naysayer")
 -- ------------------------------------------------
 -- import my custom functions
 local function toggle_markdown_smart()
-  local line = vim.api.nvim_get_current_line()
-  local is_empty = line:match("^%s*$") ~= nil
-  local current_mode = vim.api.nvim_get_mode().mode
+    local line = vim.api.nvim_get_current_line()
+    local is_empty = line:match("^%s*$") ~= nil
+    local current_mode = vim.api.nvim_get_mode().mode
 
-  -- Logic: Toggle or Add
-  if line:match("%[% %]") then
-    line = line:gsub("%[% %]", "[x]", 1)
-  elseif line:match("%[x%]") then
-    line = line:gsub("%[x%]", "[ ]", 1)
-  else
-    local indent = line:match("^%s*")
-    local content = line:gsub("^%s*", ""):gsub("^[*-] ", "", 1)
-    line = indent .. "* [ ] " .. content
-  end
+    -- Logic: Toggle or Add
+    if line:match("%[% %]") then
+        line = line:gsub("%[% %]", "[x]", 1)
+    elseif line:match("%[x%]") then
+        line = line:gsub("%[x%]", "[ ]", 1)
+    else
+        local indent = line:match("^%s*")
+        local content = line:gsub("^%s*", ""):gsub("^[*-] ", "", 1)
+        line = indent .. "* [ ] " .. content
+    end
 
-  vim.api.nvim_set_current_line(line)
+    vim.api.nvim_set_current_line(line)
 
-  -- Logic: When to enter/stay in Insert Mode
-  -- 1. If we started in Insert mode, we want to stay there.
-  -- 2. If we started in Normal mode but the line was empty, we want to start typing.
-  if current_mode:find("i") or is_empty then
-    vim.cmd("startinsert!")
-  end
+    -- Logic: When to enter/stay in Insert Mode
+    -- 1. If we started in Insert mode, we want to stay there.
+    -- 2. If we started in Normal mode but the line was empty, we want to start typing.
+    if current_mode:find("i") or is_empty then
+        vim.cmd("startinsert!")
+    end
 end
 
 -- Keymaps
@@ -199,96 +204,158 @@ local concat = table.concat
 
 --- Core formatting logic optimized for Neovim line arrays
 local function format_markdown_table_nvim(lines)
-  local rows = {}
-  local col_widths = {}
-  local num_rows = 0
-  local num_cols = 0
+    local rows = {}
+    local col_widths = {}
+    local num_rows = 0
+    local num_cols = 0
 
-  -- Pass 1: Parse arrays directly (no string splitting needed)
-  for i = 1, #lines do
-    local line = lines[i]
+    -- Pass 1: Parse arrays directly (no string splitting needed)
+    for i = 1, #lines do
+        local line = lines[i]
 
-    -- Skip the separator row
-    if not match(line, "^%s*|[%-%s%|:]+|%s*$") then
-      local row = {}
-      local col_idx = 1
+        -- Skip the separator row
+        if not match(line, "^%s*|[%-%s%|:]+|%s*$") then
+            local row = {}
+            local col_idx = 1
 
-      for cell in gmatch(line, "|([^|]+)") do
-        local clean_cell = match(cell, "^%s*(.-)%s*$") or ""
-        row[col_idx] = clean_cell
+            for cell in gmatch(line, "|([^|]+)") do
+                local clean_cell = match(cell, "^%s*(.-)%s*$") or ""
+                row[col_idx] = clean_cell
 
-        local cell_len = #clean_cell
-        if cell_len > (col_widths[col_idx] or 0) then
-          col_widths[col_idx] = cell_len
+                local cell_len = #clean_cell
+                if cell_len > (col_widths[col_idx] or 0) then
+                    col_widths[col_idx] = cell_len
+                end
+                col_idx = col_idx + 1
+            end
+
+            if col_idx > 1 then
+                num_rows = num_rows + 1
+                rows[num_rows] = row
+                if col_idx - 1 > num_cols then
+                    num_cols = col_idx - 1
+                end
+            end
         end
-        col_idx = col_idx + 1
-      end
+    end
 
-      if col_idx > 1 then
-        num_rows = num_rows + 1
-        rows[num_rows] = row
-        if col_idx - 1 > num_cols then
-          num_cols = col_idx - 1
+    -- Fallback if no table data was found
+    if num_rows == 0 then
+        return lines
+    end
+
+    -- Pass 2: Pre-calculate the separator line
+    local sep_parts = {}
+    for i = 1, num_cols do
+        sep_parts[i] = rep("-", (col_widths[i] or 0) + 2)
+    end
+    local separator_line = "|" .. concat(sep_parts, "|") .. "|"
+
+    -- Pass 3: Build the final array for Neovim
+    local out = {}
+    local out_idx = 1
+
+    for r = 1, num_rows do
+        local row = rows[r]
+        local row_parts = {}
+
+        for c = 1, num_cols do
+            local cell = row[c] or ""
+            local pad_len = (col_widths[c] or 0) - #cell
+            row_parts[c] = " " .. cell .. rep(" ", pad_len) .. " "
         end
-      end
-    end
-  end
 
-  -- Fallback if no table data was found
-  if num_rows == 0 then
-    return lines
-  end
+        out[out_idx] = "|" .. concat(row_parts, "|") .. "|"
+        out_idx = out_idx + 1
 
-  -- Pass 2: Pre-calculate the separator line
-  local sep_parts = {}
-  for i = 1, num_cols do
-    sep_parts[i] = rep("-", (col_widths[i] or 0) + 2)
-  end
-  local separator_line = "|" .. concat(sep_parts, "|") .. "|"
-
-  -- Pass 3: Build the final array for Neovim
-  local out = {}
-  local out_idx = 1
-
-  for r = 1, num_rows do
-    local row = rows[r]
-    local row_parts = {}
-
-    for c = 1, num_cols do
-      local cell = row[c] or ""
-      local pad_len = (col_widths[c] or 0) - #cell
-      row_parts[c] = " " .. cell .. rep(" ", pad_len) .. " "
+        -- Insert separator after header
+        if r == 1 then
+            out[out_idx] = separator_line
+            out_idx = out_idx + 1
+        end
     end
 
-    out[out_idx] = "|" .. concat(row_parts, "|") .. "|"
-    out_idx = out_idx + 1
-
-    -- Insert separator after header
-    if r == 1 then
-      out[out_idx] = separator_line
-      out_idx = out_idx + 1
-    end
-  end
-
-  return out
+    return out
 end
 
 -- Create a Neovim user command to format the selected range
 vim.api.nvim_create_user_command("FormatTable", function(opts)
-  -- Neovim API lines are 0-indexed, end-exclusive
-  local start_line = opts.line1 - 1
-  local end_line = opts.line2
+    -- Neovim API lines are 0-indexed, end-exclusive
+    local start_line = opts.line1 - 1
+    local end_line = opts.line2
 
-  -- Get lines from the current buffer
-  local lines = vim.api.nvim_buf_get_lines(0, start_line, end_line, false)
+    -- Get lines from the current buffer
+    local lines = vim.api.nvim_buf_get_lines(0, start_line, end_line, false)
 
-  -- Format them
-  local formatted_lines = format_markdown_table_nvim(lines)
+    -- Format them
+    local formatted_lines = format_markdown_table_nvim(lines)
 
-  -- Write back to the buffer
-  vim.api.nvim_buf_set_lines(0, start_line, end_line, false, formatted_lines)
+    -- Write back to the buffer
+    vim.api.nvim_buf_set_lines(0, start_line, end_line, false, formatted_lines)
 end, { range = true, desc = "Format Markdown Table" })
 
 -- Optional: Bind it to a keyboard shortcut (e.g., <leader>tt)
 vim.keymap.set("v", "<leader>tt", ":FormatTable<CR>", { desc = "Format selected table" })
 
+-- ================================================================
+-- ================================================================
+-- Create a custom command to trigger the finder
+vim.api.nvim_create_user_command('FuzzyFind', function()
+    -- 1. Create a temporary file to capture fzf's output
+    local tmpfile = vim.fn.tempname()
+
+    -- 2. Create a scratch buffer for our floating window
+    local buf = vim.api.nvim_create_buf(false, true)
+
+    -- 3. Calculate window dimensions (80% of the screen)
+    local width = math.floor(vim.o.columns * 0.8)
+    local height = math.floor(vim.o.lines * 0.8)
+    local col = math.floor((vim.o.columns - width) / 2)
+    local row = math.floor((vim.o.lines - height) / 2)
+
+    -- 4. Open the floating window
+    local win = vim.api.nvim_open_win(buf, true, {
+        relative = 'editor',
+        width = width,
+        height = height,
+        col = col,
+        row = row,
+        style = 'minimal',
+        border = 'rounded'
+    })
+
+    -- 5. Launch fzf in a terminal buffer and pipe the selection to our temp file.
+    -- (If you have 'fd' or 'rg' installed, you can replace 'fzf' with 'fd -t f | fzf')
+    local cmd = string.format('fzf > %s', tmpfile)
+
+    vim.fn.termopen(cmd, {
+        on_exit = function()
+            -- Close the floating window when fzf exits
+            if vim.api.nvim_win_is_valid(win) then
+                vim.api.nvim_win_close(win, true)
+            end
+
+            -- Check if our temp file exists and has content
+            if vim.fn.filereadable(tmpfile) == 1 then
+                local f = io.open(tmpfile, 'r')
+                if f then
+                    local selected_file = f:read('*l')
+                    f:close()
+
+                    -- If the user selected a file (didn't just hit Escape), open it
+                    if selected_file and selected_file ~= "" then
+                        vim.cmd('edit ' .. vim.fn.fnameescape(selected_file))
+                    end
+                end
+                -- Clean up the temporary file
+                vim.fn.delete(tmpfile)
+            end
+        end
+    })
+
+    -- 6. Immediately enter insert mode so you can start typing
+    vim.cmd('startinsert')
+end, { desc = 'Fast Fuzzy Finder via CLI fzf' })
+
+-- Bind it to a keymap (e.g., <leader>f)
+vim.keymap.set('n', '<leader>f', '<cmd>FuzzyFind<CR>', { noremap = true, silent = true, desc = 'Fuzzy Find Files' })
