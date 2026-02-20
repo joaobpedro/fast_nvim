@@ -454,3 +454,98 @@ vim.keymap.set('n', '<leader>.', '<cmd>FuzzyFind<CR>', { noremap = true, silent 
 -- end, { desc = 'Fast Fuzzy Find Open Buffers' })
 --
 -- vim.keymap.set('n', '<leader>b', '<cmd>FuzzyBuffers<CR>', { noremap = true, silent = true, desc = 'Search Open Buffers' })
+
+
+-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-- POWERLINE SETTINGS
+
+-- 1. Setup Colors (Added a purple Git section)
+local function set_statusline_colors()
+    -- Mode
+    vim.api.nvim_set_hl(0, 'SlMode', { bg = '#87afaf', fg = '#121212', bold = true })
+    -- Transition: Mode -> Git
+    vim.api.nvim_set_hl(0, 'SlModeSep', { fg = '#87afaf', bg = '#af87d7' })
+    
+    -- Git Branch
+    vim.api.nvim_set_hl(0, 'SlGit', { bg = '#af87d7', fg = '#121212', bold = true })
+    -- Transition: Git -> File Path
+    vim.api.nvim_set_hl(0, 'SlGitSep', { fg = '#af87d7', bg = '#3a3a3a' })
+    
+    -- File Path
+    vim.api.nvim_set_hl(0, 'SlPath', { bg = '#3a3a3a', fg = '#e4e4e4' })
+    -- Transition: File Path -> Empty Space
+    vim.api.nvim_set_hl(0, 'SlPathSep', { fg = '#3a3a3a', bg = 'NONE' })
+    
+    -- Right side
+    vim.api.nvim_set_hl(0, 'SlPosSep', { fg = '#3a3a3a', bg = 'NONE' })
+    vim.api.nvim_set_hl(0, 'SlPos', { bg = '#3a3a3a', fg = '#e4e4e4', bold = true })
+end
+
+set_statusline_colors()
+
+-- 2. Async Git Branch Fetcher
+-- This runs in the background only when you enter a buffer or regain focus
+vim.api.nvim_create_autocmd({"BufEnter", "FocusGained", "DirChanged"}, {
+    callback = function()
+        local buf = vim.api.nvim_get_current_buf()
+        -- Use jobstart for non-blocking background execution
+        vim.fn.jobstart({"git", "branch", "--show-current"}, {
+            stdout_buffered = true,
+            on_stdout = function(_, data)
+                if data and data[1] and data[1] ~= "" then
+                    -- Store the formatted branch name (with a Nerd Font icon)
+                    vim.api.nvim_buf_set_var(buf, "git_branch", "  " .. data[1] .. " ")
+                else
+                    -- Not a git repo
+                    vim.api.nvim_buf_set_var(buf, "git_branch", "")
+                end
+            end
+        })
+    end
+})
+
+-- 3. The Statusline Function
+_G.MinimalStatusLine = function()
+    local mode_map = {
+        ['n'] = ' NORMAL ', ['i'] = ' INSERT ', ['v'] = ' VISUAL ',
+        ['V'] = ' V-LINE ', ['\22'] = ' V-BLOCK ', ['c'] = ' COMMAND ',
+        ['R'] = ' REPLACE ',
+    }
+    local m = vim.api.nvim_get_mode().mode
+    local current_mode = mode_map[m] or (' ' .. m .. ' ')
+
+    -- Read the cached git branch. If it doesn't exist yet, default to empty string.
+    local git_branch = vim.b.git_branch or ""
+
+    local filename = vim.fn.expand('%:t')
+    if filename == '' then filename = '[No Name]' end
+    local modified_flag = vim.bo.modified and ' [+] ' or ' '
+
+    -- Build the left side dynamically
+    local left = string.format("%%#SlMode#%s", current_mode)
+
+    -- If we are in a git repo, inject the purple Git block and its transitions
+    if git_branch ~= "" then
+        left = left .. string.format("%%#SlModeSep#%%#SlGit#%s%%#SlGitSep#", git_branch)
+    else
+        -- If not a git repo, skip the purple block and transition straight to the grey Path block
+        left = left .. "%%#SlModeSep#"
+        -- We temporarily hijack SlModeSep's background to match SlPath so the arrow looks right
+        vim.api.nvim_set_hl(0, 'SlModeSep', { fg = '#87afaf', bg = '#3a3a3a' })
+    end
+
+    -- Always reset SlModeSep to purple just in case we switch back to a git buffer
+    if git_branch ~= "" then
+        vim.api.nvim_set_hl(0, 'SlModeSep', { fg = '#87afaf', bg = '#af87d7' })
+    end
+
+    -- Append the File Path block
+    left = left .. string.format("%%#SlPath# %s%s%%#SlPathSep#", filename, modified_flag)
+
+    local right = "%#SlPosSep#%#SlPos# %l:%c "
+
+    return left .. "%=" .. right
+end
+
+vim.o.statusline = "%!v:lua.MinimalStatusLine()"
