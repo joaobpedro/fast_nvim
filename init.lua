@@ -12,15 +12,9 @@ vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
 vim.opt.expandtab = true
 
--- [[ Setting options ]]
--- See `:help vim.o`
--- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
--- Make line numbers default
 vim.o.number = true
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
 vim.o.relativenumber = true
 
 -- no wrapping
@@ -28,9 +22,6 @@ vim.opt.wrap = false
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
-
--- Don't show the mode, since it's already in the status line
--- vim.o.showmode = false
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
@@ -53,9 +44,6 @@ vim.o.signcolumn = 'yes'
 
 -- Decrease update time
 vim.o.updatetime = 250
-
--- Decrease mapped sequence wait time
--- vim.o.timeoutlen = 300
 
 -- Configure how new splits should be opened
 vim.o.splitright = true
@@ -86,9 +74,7 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
--- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
-
+-- KEYMAPS
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -111,23 +97,8 @@ vim.diagnostic.config {
 
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
--- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
--- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
--- is not what someone will guess without a bit more experience.
---
--- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
--- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
--- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
-
--- Keybinds to make split navigation easier.
---  Use CTRL+<hjkl> to switch between windows
---
 --  See `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<Leader>ww', '<C-w>w', { noremap = true, desc = 'Go to next window' })
 
@@ -144,36 +115,27 @@ vim.keymap.set('n', '<leader>wL', '<C-w>L', { noremap = true, desc = 'Go to righ
 vim.keymap.set('n', '<leader>ws', '<C-w>s', { noremap = true, desc = 'Split window horizontally' })
 vim.keymap.set('n', '<leader>wv', '<C-w>v', { noremap = true, desc = 'Split window vertically' })
 
--- Navigate buffers using leader + directional keys
 vim.keymap.set('n', '<leader>bn', '<cmd>bnext<CR>', { noremap = true, silent = true, desc = 'Next Buffer' })
 vim.keymap.set('n', '<leader>bp', '<cmd>bprev<CR>', { noremap = true, silent = true, desc = 'Previous Buffer' })
--- [[ Basic Autocommands ]]
---  See `:help lua-guide-autocommands`
 
--- Highlight when yanking (copying) text
---  Try it with `yap` in normal mode
---  See `:help vim.hl.on_yank()`
+-- [[ Basic Autocommands ]]
 vim.api.nvim_create_autocmd('TextYankPost', {
     desc = 'Highlight when yanking (copying) text',
     group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
     callback = function() vim.hl.on_yank() end,
 })
 
-
 --set theme
 vim.cmd("colorscheme naysayer")
 
 -- function to toggle line numbers
-
 local toggle_number = function() 
  vim.o.number = not vim.o.number
  vim.o.relativenumber = not vim.o.relativenumber
 end
-
 vim.keymap.set('n', '<leader>tn', toggle_number)
 
 -- When jumping to the end of the file (G), automatically center the screen (zz)
--- When jumping to the end of the file (G), automatically center the screen (zz)
 vim.keymap.set('n', 'G', 'Gzz', { noremap = true })
 
 -- When doing half-page jumps down (<C-d>) or up (<C-u>), center the screen
@@ -193,16 +155,14 @@ vim.keymap.set('n', '<C-u>', '<C-u>zz', { noremap = true })
 vim.keymap.set('n', 'n', 'nzz', { noremap = true })
 vim.keymap.set('n', 'N', 'Nzz', { noremap = true })
 
-
-
 -- ------------------------------------------------
 -- ------------------------------------------------
+-- ADD CHECK MARK
 local function toggle_markdown_smart()
     local line = vim.api.nvim_get_current_line()
     local is_empty = line:match("^%s*$") ~= nil
     local current_mode = vim.api.nvim_get_mode().mode
 
-    -- Logic: Toggle or Add
     if line:match("%[% %]") then
         line = line:gsub("%[% %]", "[x]", 1)
     elseif line:match("%[x%]") then
@@ -215,36 +175,27 @@ local function toggle_markdown_smart()
 
     vim.api.nvim_set_current_line(line)
 
-    -- Logic: When to enter/stay in Insert Mode
-    -- 1. If we started in Insert mode, we want to stay there.
-    -- 2. If we started in Normal mode but the line was empty, we want to start typing.
     if current_mode:find("i") or is_empty then
         vim.cmd("startinsert!")
     end
 end
+vim.keymap.set({"n", "i"}, "<C-x>", toggle_markdown_smart, { desc = "Toggle Checkbox" })
 
--- Keymaps
-vim.keymap.set("n", "<C-x>", toggle_markdown_smart, { desc = "Toggle Checkbox" })
-vim.keymap.set("i", "<C-x>", toggle_markdown_smart, { desc = "Toggle Checkbox" })
-
--- Localize functions for maximum LuaJIT performance
+-- TABLE FORMAT
 local gmatch = string.gmatch
 local match = string.match
 local rep = string.rep
 local concat = table.concat
 
---- Core formatting logic optimized for Neovim line arrays
 local function format_markdown_table_nvim(lines)
     local rows = {}
     local col_widths = {}
     local num_rows = 0
     local num_cols = 0
 
-    -- Pass 1: Parse arrays directly (no string splitting needed)
     for i = 1, #lines do
         local line = lines[i]
 
-        -- Skip the separator row
         if not match(line, "^%s*|[%-%s%|:]+|%s*$") then
             local row = {}
             local col_idx = 1
@@ -270,19 +221,16 @@ local function format_markdown_table_nvim(lines)
         end
     end
 
-    -- Fallback if no table data was found
     if num_rows == 0 then
         return lines
     end
 
-    -- Pass 2: Pre-calculate the separator line
     local sep_parts = {}
     for i = 1, num_cols do
         sep_parts[i] = rep("-", (col_widths[i] or 0) + 2)
     end
     local separator_line = "|" .. concat(sep_parts, "|") .. "|"
 
-    -- Pass 3: Build the final array for Neovim
     local out = {}
     local out_idx = 1
 
@@ -299,7 +247,6 @@ local function format_markdown_table_nvim(lines)
         out[out_idx] = "|" .. concat(row_parts, "|") .. "|"
         out_idx = out_idx + 1
 
-        -- Insert separator after header
         if r == 1 then
             out[out_idx] = separator_line
             out_idx = out_idx + 1
@@ -309,42 +256,33 @@ local function format_markdown_table_nvim(lines)
     return out
 end
 
--- Create a Neovim user command to format the selected range
 vim.api.nvim_create_user_command("FormatTable", function(opts)
-    -- Neovim API lines are 0-indexed, end-exclusive
     local start_line = opts.line1 - 1
     local end_line = opts.line2
 
-    -- Get lines from the current buffer
     local lines = vim.api.nvim_buf_get_lines(0, start_line, end_line, false)
 
-    -- Format them
     local formatted_lines = format_markdown_table_nvim(lines)
 
-    -- Write back to the buffer
     vim.api.nvim_buf_set_lines(0, start_line, end_line, false, formatted_lines)
 end, { range = true, desc = "Format Markdown Table" })
 
--- Optional: Bind it to a keyboard shortcut (e.g., <leader>tt)
 vim.keymap.set("v", "<leader>tt", ":FormatTable<CR>", { desc = "Format selected table" })
 
 -- ================================================================
 -- ================================================================
 -- Create a custom command to trigger the finder
+
 vim.api.nvim_create_user_command('FuzzyFind', function()
-    -- 1. Create a temporary file to capture fzf's output
     local tmpfile = vim.fn.tempname()
 
-    -- 2. Create a scratch buffer for our floating window
     local buf = vim.api.nvim_create_buf(false, true)
 
-    -- 3. Calculate window dimensions (80% of the screen)
     local width = math.floor(vim.o.columns * 0.8)
     local height = math.floor(vim.o.lines * 0.8)
     local col = math.floor((vim.o.columns - width) / 2)
     local row = math.floor((vim.o.lines - height) / 2)
 
-    -- 4. Open the floating window
     local win = vim.api.nvim_open_win(buf, true, {
         relative = 'editor',
         width = width,
@@ -357,40 +295,31 @@ vim.api.nvim_create_user_command('FuzzyFind', function()
 
     vim.keymap.set({'t', 'n'}, '<Esc><Esc>', '<cmd>close<CR>', { buffer = buf_ui, silent = true })
 
-    -- 5. Launch fzf in a terminal buffer and pipe the selection to our temp file.
-    -- (If you have 'fd' or 'rg' installed, you can replace 'fzf' with 'fd -t f | fzf')
     local cmd = string.format('fzf > %s', tmpfile)
 
     vim.fn.termopen(cmd, {
         on_exit = function()
-            -- Close the floating window when fzf exits
             if vim.api.nvim_win_is_valid(win) then
                 vim.api.nvim_win_close(win, true)
             end
 
-            -- Check if our temp file exists and has content
             if vim.fn.filereadable(tmpfile) == 1 then
                 local f = io.open(tmpfile, 'r')
                 if f then
                     local selected_file = f:read('*l')
                     f:close()
 
-                    -- If the user selected a file (didn't just hit Escape), open it
                     if selected_file and selected_file ~= "" then
                         vim.cmd('edit ' .. vim.fn.fnameescape(selected_file))
                     end
                 end
-                -- Clean up the temporary file
                 vim.fn.delete(tmpfile)
             end
         end
     })
 
-    -- 6. Immediately enter insert mode so you can start typing
     vim.cmd('startinsert')
 end, { desc = 'Fast Fuzzy Finder via CLI fzf' })
-
--- Bind it to a keymap (e.g., <leader>f)
 vim.keymap.set('n', '<leader>.', '<cmd>FuzzyFind<CR>', { noremap = true, silent = true, desc = 'Fuzzy Find Files' })
 
 -- ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
