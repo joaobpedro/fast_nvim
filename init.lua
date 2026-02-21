@@ -393,6 +393,52 @@ end, { desc = 'Fast Fuzzy Finder via CLI fzf' })
 -- Bind it to a keymap (e.g., <leader>f)
 vim.keymap.set('n', '<leader>.', '<cmd>FuzzyFind<CR>', { noremap = true, silent = true, desc = 'Fuzzy Find Files' })
 
+-- ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+-- ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
+    -- AUTOPAIRS
+-- 1. Basic Auto-closing
+-- Types the pair and moves the cursor one space left to sit inside them
+vim.keymap.set('i', '(', '()<Left>', { noremap = true })
+vim.keymap.set('i', '[', '[]<Left>', { noremap = true })
+vim.keymap.set('i', '{', '{}<Left>', { noremap = true })
+vim.keymap.set('i', '"', '""<Left>', { noremap = true })
+vim.keymap.set('i', "'", "''<Left>", { noremap = true })
+vim.keymap.set('i', '`', '``<Left>', { noremap = true })
+
+-- 2. "Smart Enter" for curly braces
+-- When you type { and hit Enter, it automatically expands into a multi-line code block
+-- and indents your cursor to the correct spot on the new blank line.
+vim.keymap.set('i', '{<CR>', '{<CR>}<Esc>O', { noremap = true })
+
+-- 3. "Type Over" closing brackets (The Magic Trick)
+-- If you type a closing bracket ')' but you are already sitting right in front 
+-- of one, this prevents Neovim from typing a duplicate '())'. Instead, it just 
+-- steps your cursor to the right, stepping *over* the existing bracket.
+local function skip_or_insert(char)
+    return function()
+        local col = vim.fn.col('.')
+        local line = vim.fn.getline('.')
+        -- Get the character immediately under/after the cursor
+        local next_char = line:sub(col, col)
+        if next_char == char then
+            -- If it matches, just move right (step over)
+            return '<Right>'
+        else
+            -- If not, insert the character normally
+            return char
+        end
+    end
+end
+
+-- Apply the type-over logic to closing characters
+vim.keymap.set('i', ')', skip_or_insert(')'), { expr = true, noremap = true })
+vim.keymap.set('i', ']', skip_or_insert(']'), { expr = true, noremap = true })
+vim.keymap.set('i', '}', skip_or_insert('}'), { expr = true, noremap = true })
+vim.keymap.set('i', '"', skip_or_insert('"'), { expr = true, noremap = true })
+vim.keymap.set('i', "'", skip_or_insert("'"), { expr = true, noremap = true })
+vim.keymap.set('i', '`', skip_or_insert('`'), { expr = true, noremap = true })
+
+
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 -- POWERLINE SETTINGS
