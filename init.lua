@@ -364,4 +364,15 @@ vim.keymap.set('i', '"', skip_or_insert('"'), { expr = true, noremap = true })
 vim.keymap.set('i', "'", skip_or_insert("'"), { expr = true, noremap = true })
 vim.keymap.set('i', '`', skip_or_insert('`'), { expr = true, noremap = true })
 
+-- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
+-- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
+-- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
+--
 
+vim.lsp.config('clangd',{
+    cmd = {'clangd'},
+    filetypes = { "c", "cpp", "objc", "objcpp" },
+    name = 'clangd',
+})
+
+vim.lsp.enable('clangd')
