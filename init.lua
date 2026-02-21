@@ -20,6 +20,11 @@ vim.o.relativenumber = true
 -- no wrapping
 vim.opt.wrap = false
 
+-- Ensure the statusline is always visible
+vim.opt.laststatus = 2
+-- Set the statusline to include the full file path
+vim.opt.statusline = "%F"
+--
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
 
@@ -358,4 +363,5 @@ vim.keymap.set('i', '}', skip_or_insert('}'), { expr = true, noremap = true })
 vim.keymap.set('i', '"', skip_or_insert('"'), { expr = true, noremap = true })
 vim.keymap.set('i', "'", skip_or_insert("'"), { expr = true, noremap = true })
 vim.keymap.set('i', '`', skip_or_insert('`'), { expr = true, noremap = true })
+
 
