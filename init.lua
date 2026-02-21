@@ -324,9 +324,8 @@ vim.keymap.set('n', '<leader>.', '<cmd>FuzzyFind<CR>', { noremap = true, silent 
 
 -- ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 -- ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-    -- AUTOPAIRS
--- 1. Basic Auto-closing
--- Types the pair and moves the cursor one space left to sit inside them
+-- AUTOPAIRS
+
 vim.keymap.set('i', '(', '()<Left>', { noremap = true })
 vim.keymap.set('i', '[', '[]<Left>', { noremap = true })
 vim.keymap.set('i', '{', '{}<Left>', { noremap = true })
@@ -334,15 +333,8 @@ vim.keymap.set('i', '"', '""<Left>', { noremap = true })
 vim.keymap.set('i', "'", "''<Left>", { noremap = true })
 vim.keymap.set('i', '`', '``<Left>', { noremap = true })
 
--- 2. "Smart Enter" for curly braces
--- When you type { and hit Enter, it automatically expands into a multi-line code block
--- and indents your cursor to the correct spot on the new blank line.
 vim.keymap.set('i', '{<CR>', '{<CR>}<Esc>O', { noremap = true })
 
--- 3. "Type Over" closing brackets (The Magic Trick)
--- If you type a closing bracket ')' but you are already sitting right in front 
--- of one, this prevents Neovim from typing a duplicate '())'. Instead, it just 
--- steps your cursor to the right, stepping *over* the existing bracket.
 local function skip_or_insert(char)
     return function()
         local col = vim.fn.col('.')
