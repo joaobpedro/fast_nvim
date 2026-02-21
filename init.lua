@@ -163,6 +163,38 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 --set theme
 vim.cmd("colorscheme naysayer")
 
+-- function to toggle line numbers
+
+local toggle_number = function() 
+ vim.o.number = not vim.o.number
+ vim.o.relativenumber = not vim.o.relativenumber
+end
+
+vim.keymap.set('n', '<leader>tn', toggle_number)
+
+-- When jumping to the end of the file (G), automatically center the screen (zz)
+-- When jumping to the end of the file (G), automatically center the screen (zz)
+vim.keymap.set('n', 'G', 'Gzz', { noremap = true })
+
+-- When doing half-page jumps down (<C-d>) or up (<C-u>), center the screen
+vim.keymap.set('n', '<C-d>', '<C-d>zz', { noremap = true })
+vim.keymap.set('n', '<C-u>', '<C-u>zz', { noremap = true })
+
+-- When moving to the next search result (n) or previous (N), center the screen
+vim.keymap.set('n', 'n', 'nzz', { noremap = true })
+vim.keymap.set('n', 'N', 'Nzz', { noremap = true })
+vim.keymap.set('n', 'G', 'Gzz', { noremap = true })
+
+-- When doing half-page jumps down (<C-d>) or up (<C-u>), center the screen
+vim.keymap.set('n', '<C-d>', '<C-d>zz', { noremap = true })
+vim.keymap.set('n', '<C-u>', '<C-u>zz', { noremap = true })
+
+-- When moving to the next search result (n) or previous (N), center the screen
+vim.keymap.set('n', 'n', 'nzz', { noremap = true })
+vim.keymap.set('n', 'N', 'Nzz', { noremap = true })
+
+
+
 -- ------------------------------------------------
 -- ------------------------------------------------
 local function toggle_markdown_smart()
