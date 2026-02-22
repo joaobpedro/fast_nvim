@@ -54,14 +54,6 @@ vim.o.updatetime = 250
 vim.o.splitright = true
 vim.o.splitbelow = true
 
--- Sets how neovim will display certain whitespace characters in the editor.
---  See `:help 'list'`
---  and `:help 'listchars'`
---
---  Notice listchars is set using `vim.opt` instead of `vim.o`.
---  It is very similar to `vim.o` but offers an interface for conveniently interacting with tables.
---   See `:help lua-options`
---   and `:help lua-guide-options`
 vim.o.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
@@ -74,17 +66,11 @@ vim.o.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
 
--- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
--- instead raise a dialog asking if you wish to save the current file(s)
--- See `:help 'confirm'`
 vim.o.confirm = true
 
 -- KEYMAPS
--- Clear highlights on search when pressing <Esc> in normal mode
---  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
--- Diagnostic Config & Keymaps
 -- See :help vim.diagnostic.Opts
 vim.diagnostic.config {
     update_in_insert = false,
@@ -163,6 +149,10 @@ vim.keymap.set('n', '<C-u>', '<C-u>zz', { noremap = true })
 -- When moving to the next search result (n) or previous (N), center the screen
 vim.keymap.set('n', 'n', 'nzz', { noremap = true })
 vim.keymap.set('n', 'N', 'Nzz', { noremap = true })
+
+vim.keymap.set("v", "<M-j>", ":m '>+1<CR>gv=gv")
+vim.keymap.set("v", "<M-k>", ":m '<-2<CR>gv=gv")
+vim.keymap.set("x", "<leader>p", '"_dP')
 
 -- ------------------------------------------------
 -- ------------------------------------------------
@@ -370,8 +360,6 @@ vim.keymap.set('i', '`', skip_or_insert('`'), { expr = true, noremap = true })
 
 -- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
 -- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
--- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
---
 
 vim.lsp.config('clangd',{
     cmd = {'clangd'},
@@ -381,31 +369,22 @@ vim.lsp.config('clangd',{
 
 vim.lsp.enable('clangd')
 
-vim.keymap.set('i', 'c<leader>', '<C-x><C-o>', { noremap = true, silent = true })
+vim.keymap.set('i', '<M-c>', '<C-x><C-o>', { noremap = true, silent = true })
 
+-- this is the alt-d behavior
+-- Function to prep a global search and replace for the word under the cursor
+local function change_all_occurrences()
+  local word = vim.fn.expand("<cword>") -- Get the word under cursor
+  -- Prep the command: %s/old_word/|/g (the | is where you type)
+  local cmd = ":%s/" .. word .. "//g<Left><Left>"
+  
+  -- Feed the keys to the command line
+  vim.api.nvim_feedkeys(
+    vim.api.nvim_replace_termcodes(cmd, true, false, true), 
+    "n", 
+    false
+  )
+end
 
--- Commented below because it is slow
--- vim.api.nvim_create_autocmd("InsertCharPre", {
---     callback = function()
---         if vim.bo.filetype == "cpp" then
---             if vim.fn.pumvisible() == 0 then
---                 local char = vim.v.char
---                 -- Only trigger if the character is a letter, dot, or underscore
---                 if char:match("[%w%.%_]") then
---                     vim.schedule(function()
---                         vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<C-x><C-o>", true, false, true), "n")
---                     end)
---                 end
---             end
---         end
---     end,
--- })
---
--- -- Set completeopt to have a better completion experience
--- -- menuone: popup even when there's only one match
--- -- noinsert: Do not insert text until a selection is made
--- -- noselect: Do not select a match in the menu until you choose one
--- vim.opt.completeopt = { "menuone", "noselect", "noinsert" }
---
--- -- Avoid showing extra messages like "match 1 of 2"
--- vim.opt.shortmess:append("c")
+-- Keymap: Press <leader>ra (Rename All)
+vim.keymap.set("n", "<M-d>", change_all_occurrences, { desc = "Change all occurrences of word" })
