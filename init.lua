@@ -23,7 +23,7 @@ vim.opt.wrap = false
 -- Ensure the statusline is always visible
 vim.opt.laststatus = 2
 -- Set the statusline to include the full file path
-vim.opt.statusline = "%F"
+-- vim.opt.statusline = "%F"
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -381,28 +381,31 @@ vim.lsp.config('clangd',{
 
 vim.lsp.enable('clangd')
 
+vim.keymap.set('i', 'c<leader>', '<C-x><C-o>', { noremap = true, silent = true })
 
-vim.api.nvim_create_autocmd("InsertCharPre", {
-    callback = function()
-        if vim.bo.filetype == "cpp" then
-            if vim.fn.pumvisible() == 0 then
-                local char = vim.v.char
-                -- Only trigger if the character is a letter, dot, or underscore
-                if char:match("[%w%.%_]") then
-                    vim.schedule(function()
-                        vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<C-x><C-o>", true, false, true), "n")
-                    end)
-                end
-            end
-        end
-    end,
-})
 
--- Set completeopt to have a better completion experience
--- menuone: popup even when there's only one match
--- noinsert: Do not insert text until a selection is made
--- noselect: Do not select a match in the menu until you choose one
-vim.opt.completeopt = { "menuone", "noselect", "noinsert" }
-
--- Avoid showing extra messages like "match 1 of 2"
-vim.opt.shortmess:append("c")
+-- Commented below because it is slow
+-- vim.api.nvim_create_autocmd("InsertCharPre", {
+--     callback = function()
+--         if vim.bo.filetype == "cpp" then
+--             if vim.fn.pumvisible() == 0 then
+--                 local char = vim.v.char
+--                 -- Only trigger if the character is a letter, dot, or underscore
+--                 if char:match("[%w%.%_]") then
+--                     vim.schedule(function()
+--                         vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<C-x><C-o>", true, false, true), "n")
+--                     end)
+--                 end
+--             end
+--         end
+--     end,
+-- })
+--
+-- -- Set completeopt to have a better completion experience
+-- -- menuone: popup even when there's only one match
+-- -- noinsert: Do not insert text until a selection is made
+-- -- noselect: Do not select a match in the menu until you choose one
+-- vim.opt.completeopt = { "menuone", "noselect", "noinsert" }
+--
+-- -- Avoid showing extra messages like "match 1 of 2"
+-- vim.opt.shortmess:append("c")
