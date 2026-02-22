@@ -24,7 +24,7 @@ vim.opt.wrap = false
 vim.opt.laststatus = 2
 -- Set the statusline to include the full file path
 vim.opt.statusline = "%F"
---
+
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
 
@@ -122,6 +122,10 @@ vim.keymap.set('n', '<leader>wv', '<C-w>v', { noremap = true, desc = 'Split wind
 
 vim.keymap.set('n', '<leader>bn', '<cmd>bnext<CR>', { noremap = true, silent = true, desc = 'Next Buffer' })
 vim.keymap.set('n', '<leader>bp', '<cmd>bprev<CR>', { noremap = true, silent = true, desc = 'Previous Buffer' })
+
+vim.keymap.set("n", "<C-8>", "<C-w>5<")
+vim.keymap.set("n", "<C-9>", "<C-w>5>")
+vim.keymap.set("n", "<C-7>", "<C-w>=")
 
 -- [[ Basic Autocommands ]]
 vim.api.nvim_create_autocmd('TextYankPost', {
@@ -376,3 +380,4 @@ vim.lsp.config('clangd',{
 })
 
 vim.lsp.enable('clangd')
+
