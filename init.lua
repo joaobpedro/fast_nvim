@@ -188,7 +188,7 @@ local function toggle_markdown_smart()
         vim.cmd("startinsert!")
     end
 end
-vim.keymap.set({"n", "i"}, "<C-x>", toggle_markdown_smart, { desc = "Toggle Checkbox" })
+vim.keymap.set({"n", "i"}, "<leader>x", toggle_markdown_smart, { desc = "Toggle Checkbox" })
 
 -- TABLE FORMAT
 local gmatch = string.gmatch
@@ -381,3 +381,26 @@ vim.lsp.config('clangd',{
 
 vim.lsp.enable('clangd')
 
+
+vim.api.nvim_create_autocmd("InsertCharPre", {
+  callback = function()
+    if vim.fn.pumvisible() == 0 then
+      local char = vim.v.char
+      -- Only trigger if the character is a letter, dot, or underscore
+      if char:match("[%w%.%_]") then
+        vim.schedule(function()
+          vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<C-x><C-o>", true, false, true), "n")
+        end)
+      end
+    end
+  end,
+})
+
+-- Set completeopt to have a better completion experience
+-- menuone: popup even when there's only one match
+-- noinsert: Do not insert text until a selection is made
+-- noselect: Do not select a match in the menu until you choose one
+vim.opt.completeopt = { "menuone", "noselect", "noinsert" }
+
+-- Avoid showing extra messages like "match 1 of 2"
+vim.opt.shortmess:append("c")
