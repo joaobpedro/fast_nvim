@@ -368,7 +368,6 @@ vim.lsp.config('clangd',{
 })
 
 vim.lsp.enable('clangd')
-
 vim.keymap.set('i', '<M-c>', '<C-x><C-o>', { noremap = true, silent = true })
 
 -- this is the alt-d behavior
@@ -447,3 +446,15 @@ end, { desc = "Search word under cursor" })
 -- Navigate search results without leaving your file
 vim.keymap.set("n", "<M-n>", ":cprev<CR>zz", { desc = "Previous search result" })
 vim.keymap.set("n", "<M-p>", ":cnext<CR>zz", { desc = "Next search result" })
+
+
+
+--[[  
+--  THIS IS THE SHORTCUT TO THE CONFIG
+--]]
+-- Open Neovim configuration file from anywhere
+vim.keymap.set("n", "<leader>ec", function()
+  -- Get the path to your config directory and append '/init.lua'
+  local config_path = vim.fn.stdpath("config") .. "/init.lua"
+  vim.cmd("edit " .. config_path)
+end, { desc = "Edit Neovim config" })
