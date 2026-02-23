@@ -388,3 +388,62 @@ end
 
 -- Keymap: Press <leader>ra (Rename All)
 vim.keymap.set("n", "<M-d>", change_all_occurrences, { desc = "Change all occurrences of word" })
+
+
+-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+--
+
+-- Define the search function
+local function fast_grep(args)
+  local search_term = args.args
+  if search_term == "" then
+    print("Usage: :Grep <search_term>")
+    return
+  end
+
+  -- We use 'rg' (ripgrep) if available, otherwise fallback to 'grep'
+  local cmd = vim.fn.executable("rg") == 1 
+    and { "rg", "--vimgrep", "--smart-case", search_term }
+    or { "grep", "-rnE", search_term, "." }
+
+  print("Searching for: " .. search_term .. "...")
+
+  -- Run asynchronously
+  vim.system(cmd, { text = true }, function(obj)
+    vim.schedule(function()
+      if obj.code ~= 0 or obj.stdout == "" then
+        print("No matches found for: " .. search_term)
+        return
+      end
+
+      -- Populate the quickfix list and open it
+      vim.fn.setqflist({}, 'r', { title = "Search: " .. search_term, lines = vim.split(obj.stdout, "\n") })
+      vim.cmd("copen")
+      print("Search complete. Found " .. #vim.split(obj.stdout, "\n") .. " matches.")
+    end)
+  end)
+end
+
+-- Create the user command
+vim.api.nvim_create_user_command("Grep", fast_grep, { nargs = 1 })
+
+
+-- 1. Press <leader>fs (Find String) to type your search
+vim.keymap.set("n", "<leader>fs", function()
+  local input = vim.fn.input("Search for: ")
+  if input ~= "" then
+    vim.cmd("Grep " .. input)
+  end
+end, { desc = "Search for string in project" })
+
+-- 2. Press <leader>fw (Find Word) to search for the word under the cursor
+vim.keymap.set("n", "<leader>fw", function()
+  local word = vim.fn.expand("<cword>")
+  if word ~= "" then
+    vim.cmd("Grep " .. word)
+  end
+end, { desc = "Search word under cursor" })
+
+-- Navigate search results without leaving your file
+vim.keymap.set("n", "<M-n>", ":cprev<CR>zz", { desc = "Previous search result" })
+vim.keymap.set("n", "<M-p>", ":cnext<CR>zz", { desc = "Next search result" })
