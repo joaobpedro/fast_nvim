@@ -458,3 +458,12 @@ vim.keymap.set("n", "<leader>ec", function()
   local config_path = vim.fn.stdpath("config") .. "/init.lua"
   vim.cmd("edit " .. config_path)
 end, { desc = "Edit Neovim config" })
+
+
+-- surround keymaps
+-- Select text, press ( to get (text)
+vim.keymap.set("x", "(", 'c(<C-r>")<Esc>')
+vim.keymap.set("x", "[", 'c[<C-r>"]<Esc>')
+vim.keymap.set("x", "{", 'c{<C-r>"}<Esc>')
+vim.keymap.set("x", '"', 'c"<C-r>""<Esc>')
+vim.keymap.set("x", "'", "c'<C-r>\"'<Esc>")
