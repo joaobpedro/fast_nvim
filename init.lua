@@ -180,6 +180,29 @@ local function toggle_markdown_smart()
 end
 vim.keymap.set({"n", "i"}, "<M-x>", toggle_markdown_smart, { desc = "Toggle Checkbox" })
 
+local function remove_markdown_completely()
+    local line = vim.api.nvim_get_current_line()
+    
+    -- 1. Capture the initial indentation (%s*)
+    -- 2. Match (but don't capture) the bullet [*-] and the checkbox \[.[\]]
+    -- 3. Keep everything after that (%s*(.*))
+    local indent, content = line:match("^(%s*)[*-]%s*%[[ xX]%s*]%s*(.*)")
+
+    -- If it didn't match a checkbox, try matching just a standard bullet
+    if not content then
+        indent, content = line:match("^(%s*)[*-]%s*(.*)")
+    end
+
+    -- If a match was found, update the line; otherwise leave it alone
+    if content then
+        vim.api.nvim_set_current_line(indent .. content)
+    end
+end
+
+-- Map it to a key (e.g., Alt+Shift+X)
+vim.keymap.set({"n", "i"}, "<M-l>", remove_markdown_completely, { desc = "Remove Bullet and Checkbox" })
+
+
 -- TABLE FORMAT
 local gmatch = string.gmatch
 local match = string.match
