@@ -488,9 +488,9 @@ end, { desc = "Edit Neovim config" })
 vim.keymap.set("x", "(", 'c(<C-r>")<Esc>')
 vim.keymap.set("x", "[", 'c[<C-r>"]<Esc>')
 vim.keymap.set("x", "{", 'c{<C-r>"}<Esc>')
+vim.keymap.set("x", "<", 'c<<C-r>"><Esc>')
 vim.keymap.set("x", '"', 'c"<C-r>""<Esc>')
 vim.keymap.set("x", "'", "c'<C-r>\"'<Esc>")
-
 
 -- TODO highlight
 
