@@ -383,13 +383,11 @@ vim.keymap.set('i', '`', skip_or_insert('`'), { expr = true, noremap = true })
 
 -- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
 -- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
-
 vim.lsp.config('clangd',{
     cmd = {'clangd'},
     filetypes = { "c", "cpp", "objc", "objcpp" },
     name = 'clangd',
 })
-
 vim.lsp.enable('clangd')
 vim.keymap.set('i', '<M-c>', '<C-x><C-o>', { noremap = true, silent = true })
 
@@ -508,7 +506,7 @@ local function highlight_keywords()
 
   -- Add matches for specific keywords
   vim.fn.matchadd("CustomTodo", [[\v<(TODO|FIXME|OPTIMIZE|WARNING)>]])
-  vim.fn.matchadd("CustomNote", [[\v<(NOTE|INFO|HACK)>]])
+  vim.fn.matchadd("CustomNote", [[\v<(NOTE|INFO|HACK|HARDCODED)>]])
 end
 
 -- Run the function whenever a buffer is entered
