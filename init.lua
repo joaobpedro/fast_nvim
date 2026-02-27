@@ -289,7 +289,7 @@ vim.api.nvim_create_user_command("FormatTable", function(opts)
     vim.api.nvim_buf_set_lines(0, start_line, end_line, false, formatted_lines)
 end, { range = true, desc = "Format Markdown Table" })
 
-vim.keymap.set("v", "<leader>tt", ":FormatTable<CR>", { desc = "Format selected table" })
+vim.keymap.set("v", "<leader>tf", ":FormatTable<CR>", { desc = "Format selected table" })
 
 -- ================================================================
 -- ================================================================
