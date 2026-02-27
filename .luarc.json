@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+  "Lua": {
+    "diagnostics": {
+      "globals": ["vim"]
+    },
+    "workspace": {
+      "library": [
+        "${VIMRUNTIME}/lua",
+        "${VIMRUNTIME}/lua/vim"
+        // Add paths to other plugin lua directories if needed, e.g.,
+        // "~/.local/share/nvim/lazy/lazy.nvim/lua"
+      ]
+    },
+    "runtime": {
+      "version": "LuaJIT"
+    }
+  }
+}
+

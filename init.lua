@@ -383,12 +383,28 @@ vim.keymap.set('i', '`', skip_or_insert('`'), { expr = true, noremap = true })
 
 -- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
 -- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
+
 vim.lsp.config('clangd',{
     cmd = {'clangd'},
     filetypes = { "c", "cpp", "objc", "objcpp" },
     name = 'clangd',
 })
 vim.lsp.enable('clangd')
+
+vim.lsp.config['lua_ls'] = {
+  cmd = { 'lua-language-server' },
+  filetypes = { 'lua' },
+  root_markers = { { '.luarc.json', '.luarc.jsonc' }, '.git' },
+  settings = {
+    Lua = {
+      runtime = {
+        version = 'LuaJIT',
+      }
+    }
+  }
+}
+vim.lsp.enable('lua_ls')
+
 vim.keymap.set('i', '<M-c>', '<C-x><C-o>', { noremap = true, silent = true })
 
 -- this is the alt-d behavior
