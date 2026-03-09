@@ -70,7 +70,7 @@ local groups = {
  --  ["SignColumn"] = { },
  --  ["Folded"] = { },
  --  ["FoldColumn"] = { },
-  ["Cursor"] = { fg= p.bright_yellow },
+  ["Cursor"] = { link = "NaysayerGold" },
   ["vCursor"] = { link = "Cursor" },
   ["iCursor"] = { link = "Cursor" },
   ["lCursor"] = { link = "Cursor" },

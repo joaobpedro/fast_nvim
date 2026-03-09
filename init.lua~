@@ -71,6 +71,7 @@ vim.o.confirm = true
 
 -- KEYMAPS
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '-', '$', { desc = "End of line" })
 
 -- See :help vim.diagnostic.Opts
 vim.diagnostic.config {
@@ -542,3 +543,17 @@ local Todos = function()
     end
 end
 vim.keymap.set("n", "<leader>td", Todos, {desc = "Global todos files, kepth in the config dir"})
+
+
+-- NEOVIDE CONFIG
+if vim.g.neovide then
+	vim.o.guifont = "JetBrainsMono Nerd Font:h13" -- text below applies for VimScript
+	vim.g.neovide_disable_all_animations = true
+	vim.g.neovide_cursor_trail_size = 0
+	vim.g.neovide_cursor_vfx_mode = ""
+	vim.g.neovide_cursor_animation_length = 0.0
+	vim.g.neovide_position_animation_length = 0.0
+	vim.g.neovide_scroll_animation_length = 0.0
+	vim.g.neovide_scroll_animation_far_lines = 0
+	vim.g.neovide_no_idle = true
+end
