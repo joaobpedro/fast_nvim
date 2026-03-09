@@ -30,7 +30,8 @@
 * [x] wrong cross section -> need to run the bottom
     * [x] Re-run the top x-section with more steps
 * [ ] TODO Bandibuli -> update the local report with the 45deg analysis for the armor wires
-    * [ ]  right now I am not matching the 45deg temp test, need to reduce the bending stiffnes of the outer sheath
+    * [x]  right now I am not matching the 45deg temp test, need to reduce the bending stiffnes of the outer sheath
+    NOTE I have the correct ffl and it matches more of less the bending test - up to a certain curvature that is
 * [x] help houston in the revision of the Hammerhead umbilical
 * [x] Finish the Troll C proposal
 

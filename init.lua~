@@ -72,6 +72,7 @@ vim.o.confirm = true
 -- KEYMAPS
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '-', '$', { desc = "End of line" })
+vim.keymap.set('n', '0', '^', { desc = "End of line" })
 
 -- See :help vim.diagnostic.Opts
 vim.diagnostic.config {
