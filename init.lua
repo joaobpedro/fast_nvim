@@ -512,19 +512,21 @@ vim.keymap.set("x", "'", "c'<C-r>\"'<Esc>")
 -- TODO highlight
 
 -- Create a custom highlight group for keywords
+vim.api.nvim_set_hl(0, "CustomImpo", { fg = "#000000", bg = "#FF4500", bold = true })
 vim.api.nvim_set_hl(0, "CustomTodo", { fg = "#000000", bg = "#FFCC00", bold = true })
 vim.api.nvim_set_hl(0, "CustomNote", { fg = "#000000", bg = "#00CCFF", bold = true })
 
 local function highlight_keywords()
   -- Clear existing matches to prevent stacking
   for _, match in ipairs(vim.fn.getmatches()) do
-    if match.group == "CustomTodo" or match.group == "CustomNote" then
+    if match.group == "CustomTodo" or match.group == "CustomNote" or match.group == "CustomImpo" then
       vim.fn.matchdelete(match.id)
     end
   end
 
   -- Add matches for specific keywords
-  vim.fn.matchadd("CustomTodo", [[\v<(TODO|FIXME|OPTIMIZE|WARNING)>]])
+  vim.fn.matchadd("CustomImpo", [[\v<(FIXME|WARNING)>]])
+  vim.fn.matchadd("CustomTodo", [[\v<(TODO|OPTIMIZE)>]])
   vim.fn.matchadd("CustomNote", [[\v<(NOTE|INFO|HACK|HARDCODED)>]])
 end
 
