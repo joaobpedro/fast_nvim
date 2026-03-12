@@ -16,7 +16,7 @@ vim.opt.expandtab = true
 --  For more options, you can see `:help option-list`
 
 vim.o.number = true
-vim.o.relativenumber = true
+vim.o.relativenumber = false
 
 -- no wrapping
 vim.opt.wrap = false
