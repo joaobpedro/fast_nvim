@@ -525,7 +525,7 @@ local function highlight_keywords()
   end
 
   -- Add matches for specific keywords
-  vim.fn.matchadd("CustomImpo", [[\v<(FIXME|WARNING)>]])
+  vim.fn.matchadd("CustomImpo", [[\v<(FIXME|WARNING|IMPORTANT)>]])
   vim.fn.matchadd("CustomTodo", [[\v<(TODO|OPTIMIZE)>]])
   vim.fn.matchadd("CustomNote", [[\v<(NOTE|INFO|HACK|HARDCODED)>]])
 end
@@ -576,7 +576,6 @@ vim.api.nvim_set_hl(0, "UnsavedDelete", { fg = "#e74c3c", bold = true })
 local function place_sign(buf, line, sign_type)
     local hl_group = "UnsavedChange"
     local text = "~"
-    
     if sign_type == "add" then
         hl_group = "UnsavedAdd"
         text = "+"
