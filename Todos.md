@@ -13,6 +13,7 @@
     * [x] add the BS at tether
 * [x] make presentation of the results
 * [ ] run dynamic analysis over the weekend
+    * [ ] The curretn with 180deg has a problem, the MBR is reached even in static analysis
 
 ### Notes
  - the CW landing verification starts at Technip's step 21
@@ -34,4 +35,5 @@
     NOTE I have the correct ffl and it matches more of less the bending test - up to a certain curvature that is
 * [x] help houston in the revision of the Hammerhead umbilical
 * [x] Finish the Troll C proposal
+* [ ] Check the proposal for JDR Jotun
 
