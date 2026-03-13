@@ -716,3 +716,105 @@ vim.api.nvim_create_autocmd({"BufEnter", "DirChanged"}, {
   callback = set_project_keymaps,
 })
 
+-- Create a namespace/module for our custom markdown tools
+_G.MarkdownTools = {}
+
+--- Helper to convert a Markdown string like "My Title!" to an anchor like "my-title"
+local function normalize_heading_to_anchor(title)
+    return title:lower():gsub("%s+", "-"):gsub("[^%w%-]", "")
+end
+
+--- Scans the current buffer for a heading and jumps to it
+local function jump_to_heading(anchor)
+    local target_anchor = anchor:gsub("^#", "")
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    
+    for i, line in ipairs(lines) do
+        -- Find lines that start with Markdown heading syntax (#, ##, etc.)
+        local title = line:match("^#+%s+(.*)$")
+        if title then
+            local current_anchor = normalize_heading_to_anchor(title)
+            if current_anchor == target_anchor then
+                -- Move cursor to that line (1-indexed for rows, 0-indexed for cols)
+                vim.api.nvim_win_set_cursor(0, {i, 0})
+                -- Center the screen for visual comfort
+                vim.cmd("normal! zz")
+                return
+            end
+        end
+    end
+    vim.notify("Heading not found: " .. anchor, vim.log.levels.WARN)
+end
+
+--- Main function to extract and follow the link under the cursor
+function _G.MarkdownTools.follow_link()
+    local line = vim.api.nvim_get_current_line()
+    local col = vim.api.nvim_win_get_cursor(0)[2] + 1 -- Lua strings are 1-indexed
+
+    local target = nil
+
+    -- 1. Find the exact link under the cursor
+    local start_idx = 1
+    while true do
+        -- Lua pattern to match [text](target)
+        local s, e, _, link = string.find(line, "%[(.-)%]%((.-)%)", start_idx)
+        if not s then break end
+        
+        -- Check if the cursor's column falls inside this specific link block
+        if col >= s and col <= e then
+            target = link
+            break
+        end
+        start_idx = e + 1
+    end
+
+    if not target or target == "" then
+        vim.notify("No markdown link found under cursor", vim.log.levels.WARN)
+        return
+    end
+
+    -- 2. Route the target based on its type
+    if target:match("^http[s]?://") then
+        -- Web URL: Open in the system's default web browser
+        local cmd = vim.fn.has("mac") == 1 and "open" 
+                 or vim.fn.has("unix") == 1 and "xdg-open" 
+                 or vim.fn.has("win32") == 1 and "start"
+        
+        if cmd then
+            vim.fn.jobstart({cmd, target}, { detach = true })
+        else
+            vim.notify("Unsupported OS for opening URLs", vim.log.levels.ERROR)
+        end
+
+    elseif target:match("^#") then
+        -- Local Anchor: Jump to heading in the *current* file
+        jump_to_heading(target)
+
+    else
+        -- File Path: It might also contain an anchor (e.g., ./other_file.md#conclusion)
+        local file_path, anchor = target:match("([^#]+)(#.*)")
+        file_path = file_path or target
+
+        -- Expand paths like ~/Documents/...
+        local expanded_path = vim.fn.expand(file_path)
+
+        -- Open the target file in the current buffer
+        vim.cmd("edit " .. vim.fn.fnameescape(expanded_path))
+
+        -- If the link had a specific heading attached, jump to it after the file opens
+        if anchor then
+            jump_to_heading(anchor)
+        end
+    end
+end
+
+-- Create an autocommand to only map this key in markdown files
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "markdown",
+    callback = function(opts)
+        vim.keymap.set("n", "<CR>", "<cmd>lua _G.MarkdownTools.follow_link()<CR>", { 
+            buffer = opts.buf, 
+            desc = "Follow Markdown Link" 
+        })
+    end,
+})
