@@ -692,3 +692,27 @@ for _, buf in ipairs(vim.api.nvim_list_bufs()) do
         cache_open(buf)
     end
 end
+
+
+-- PROJECT specific keymaps
+-- Define a function to set project-specific keymaps
+local function set_project_keymaps()
+  -- Get the current working directory
+  local cwd = vim.fn.getcwd()
+  -- Check if the current directory matches your project path
+  if cwd:find("/home/joao/source/01_GameCpp/01_hello_SDL") then
+    -- Set specific keymaps for the first project
+    vim.opt.makeprg = "cmake --build build"
+    vim.keymap.set("n", "<leader>cp", ":make<CR>", { desc = "Build project A" })
+  elseif cwd:find("path/to/your/second_project") then
+    -- Set specific keymaps for the second project
+    print("hello2")
+  end
+end
+
+-- Create an autocmd that runs the function when entering a buffer or changing directory
+vim.api.nvim_create_autocmd({"BufEnter", "DirChanged"}, {
+  group = vim.api.nvim_create_augroup("ProjectKeymapsGroup", { clear = true }),
+  callback = set_project_keymaps,
+})
+
