@@ -561,160 +561,134 @@ if vim.g.neovide then
 	vim.g.neovide_no_idle = true
 end
 
-
+-- EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+-- EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 -- (EXPERIMENTAL FEATURES)
 --
-local ns = vim.api.nvim_create_namespace("unsaved_changes")
-local saved_text_cache = {}
+local ns = vim.api.nvim_create_namespace("npp_tracker")
 
--- Define highlight colors
-vim.api.nvim_set_hl(0, "UnsavedAdd", { fg = "#2ecc71", bold = true })
-vim.api.nvim_set_hl(0, "UnsavedChange", { fg = "#e67e22", bold = true })
-vim.api.nvim_set_hl(0, "UnsavedDelete", { fg = "#e74c3c", bold = true })
+-- We need two caches to mimic Notepad++
+local opened_cache = {}
+local saved_cache = {}
 
--- Helper to place the sign
-local function place_sign(buf, line, sign_type)
-    local hl_group = "UnsavedChange"
-    local text = "~"
-    if sign_type == "add" then
-        hl_group = "UnsavedAdd"
-        text = "+"
-    elseif sign_type == "delete" then
-        hl_group = "UnsavedDelete"
-        text = "_"
-    end
+-- Notepad++ Colors (Orange for Unsaved, Green for Saved)
+vim.api.nvim_set_hl(0, "NppUnsaved", { fg = "#F39C12", bold = true }) -- Orange
+vim.api.nvim_set_hl(0, "NppSaved",   { fg = "#2ECC71", bold = true }) -- Green
 
-    pcall(vim.api.nvim_buf_set_extmark, buf, ns, math.max(0, line - 1), 0, {
-        sign_text = text,
-        sign_hl_group = hl_group,
-        priority = 10,
-    })
-end
-
--- Caches the saved state of the buffer
-local function cache_saved_state(buf)
+-- 1. Caches the state when the file is FIRST opened
+local function cache_open(buf)
     if not vim.api.nvim_buf_is_valid(buf) then return end
-    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    saved_text_cache[buf] = table.concat(lines, "\n")
+    local text = table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, false), "\n")
+    opened_cache[buf] = text
+    saved_cache[buf]  = text
     vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 end
 
--- Compares live buffer to the cached saved state
-local function update_unsaved_signs(buf)
+-- 2. Updates the saved state when you hit :w
+local function cache_save(buf)
     if not vim.api.nvim_buf_is_valid(buf) then return end
-    
-    local orig_text = saved_text_cache[buf]
-    if not orig_text then return end 
-    
-    local curr_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    local curr_text = table.concat(curr_lines, "\n")
-    
-    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-    
-    if orig_text == curr_text then return end 
-    
-    local hunks = vim.diff(orig_text, curr_text, { result_type = "indices" })
-    if not hunks then return end
-
-    for _, hunk in ipairs(hunks) do
-        local _, count_orig, start_curr, count_curr = unpack(hunk)
-        
-        if count_curr == 0 then
-            place_sign(buf, math.max(1, start_curr), "delete")
-        elseif count_orig == 0 then
-            for i = 0, count_curr - 1 do
-                place_sign(buf, start_curr + i, "add")
-            end
-        else
-            for i = 0, count_curr - 1 do
-                place_sign(buf, start_curr + i, "change")
-            end
-        end
-    end
+    local text = table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, false), "\n")
+    saved_cache[buf] = text
 end
 
---- NEW: Send unsaved lines to the Quickfix list
-local function unsaved_to_quickfix()
-    local buf = vim.api.nvim_get_current_buf()
-    local orig_text = saved_text_cache[buf]
+-- 3. Core logic: Compare the live buffer against BOTH caches
+local function update_npp_signs(buf)
+    if not vim.api.nvim_buf_is_valid(buf) then return end
     
-    if not orig_text then
-        vim.notify("No saved state cached for this buffer.", vim.log.levels.WARN)
-        return
-    end
+    local t_open  = opened_cache[buf]
+    local t_saved = saved_cache[buf]
+    if not t_open or not t_saved then return end 
 
     local curr_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-    local curr_text = table.concat(curr_lines, "\n")
+    local t_curr = table.concat(curr_lines, "\n")
+    
+    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
-    if orig_text == curr_text then
-        vim.notify("No unsaved changes to review.", vim.log.levels.INFO)
-        return
-    end
+    -- Track the state of each line in a table: line_num -> { state, char }
+    local line_states = {}
 
-    local hunks = vim.diff(orig_text, curr_text, { result_type = "indices" })
-    if not hunks then return end
-
-    local qf_items = {}
-
-    for _, hunk in ipairs(hunks) do
-        local _, count_orig, start_curr, count_curr = unpack(hunk)
-
-        if count_curr == 0 then
-            -- Handle Deletions: Point to the line above where text was removed
-            local lnum = math.max(1, start_curr)
-            table.insert(qf_items, {
-                bufnr = buf,
-                lnum = lnum,
-                text = "[- Deleted text below this line -]",
-                type = "W" -- Marks it as a Warning in the quickfix list
-            })
-        else
-            -- Handle Additions and Modifications
-            for i = 0, count_curr - 1 do
-                local lnum = start_curr + i
-                table.insert(qf_items, {
-                    bufnr = buf,
-                    lnum = lnum,
-                    text = curr_lines[lnum] or "",
-                    type = "I" -- Marks it as Info
-                })
+    -- PASS 1: Compare against Opened State (Finds Green / "Saved" changes)
+    if t_open ~= t_curr then
+        local hunks = vim.diff(t_open, t_curr, { result_type = "indices" })
+        if hunks then
+            for _, hunk in ipairs(hunks) do
+                local _, count_orig, start_curr, count_curr = unpack(hunk)
+                if count_curr == 0 then
+                    line_states[math.max(1, start_curr)] = { type = "saved", char = "_" }
+                else
+                    for i = 0, count_curr - 1 do
+                        line_states[start_curr + i] = { type = "saved", char = "▎" }
+                    end
+                end
             end
         end
     end
 
-    -- Populate the quickfix list and open the window
-    vim.fn.setqflist({}, ' ', {
-        title = "Unsaved Changes",
-        items = qf_items
-    })
-    vim.cmd("copen")
+    -- PASS 2: Compare against Saved State (Finds Orange / "Unsaved" changes)
+    -- This overrides Pass 1, because active typing takes priority over old saves
+    if t_saved ~= t_curr then
+        local hunks = vim.diff(t_saved, t_curr, { result_type = "indices" })
+        if hunks then
+            for _, hunk in ipairs(hunks) do
+                local _, count_orig, start_curr, count_curr = unpack(hunk)
+                if count_curr == 0 then
+                    line_states[math.max(1, start_curr)] = { type = "unsaved", char = "_" }
+                else
+                    for i = 0, count_curr - 1 do
+                        line_states[start_curr + i] = { type = "unsaved", char = "▎" }
+                    end
+                end
+            end
+        end
+    end
+
+    -- PASS 3: Render the signs to the gutter
+    for line, state in pairs(line_states) do
+        local hl = state.type == "unsaved" and "NppUnsaved" or "NppSaved"
+        pcall(vim.api.nvim_buf_set_extmark, buf, ns, line - 1, 0, {
+            sign_text = state.char,
+            sign_hl_group = hl,
+            priority = 10,
+        })
+    end
 end
 
--- Set up autocommands
-local unsaved_augroup = vim.api.nvim_create_augroup("UnsavedSigns", { clear = true })
+-- Set up autocommands to handle the lifecycle
+local npp_augroup = vim.api.nvim_create_augroup("NppTracker", { clear = true })
 
-vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost" }, {
-    group = unsaved_augroup,
-    callback = function(args) cache_saved_state(args.buf) end,
+-- When you open a file, establish the baseline
+vim.api.nvim_create_autocmd("BufReadPost", {
+    group = npp_augroup,
+    callback = function(args) cache_open(args.buf) end,
 })
 
+-- When you save, update the save cache and trigger a sign update to turn Orange into Green
+vim.api.nvim_create_autocmd("BufWritePost", {
+    group = npp_augroup,
+    callback = function(args) 
+        cache_save(args.buf) 
+        update_npp_signs(args.buf)
+    end,
+})
+
+-- While you type, update the signs live (Orange)
 vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
-    group = unsaved_augroup,
-    callback = function(args) update_unsaved_signs(args.buf) end,
+    group = npp_augroup,
+    callback = function(args) update_npp_signs(args.buf) end,
 })
 
+-- Cleanup memory when a buffer is closed entirely
 vim.api.nvim_create_autocmd("BufWipeout", {
-    group = unsaved_augroup,
-    callback = function(args) saved_text_cache[args.buf] = nil end,
+    group = npp_augroup,
+    callback = function(args) 
+        opened_cache[args.buf] = nil
+        saved_cache[args.buf]  = nil 
+    end,
 })
 
--- Initialize currently open buffers
+-- Initialize currently open buffers (useful if you source this file while running)
 for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buftype == "" then
-        cache_saved_state(buf)
+        cache_open(buf)
     end
 end
-
--- Create the User Command and Keymap for the Quickfix feature
-vim.api.nvim_create_user_command("UnsavedQuickfix", unsaved_to_quickfix, { desc = "Send unsaved changes to Quickfix" })
-vim.keymap.set("n", "<leader>uq", "<cmd>UnsavedQuickfix<CR>", { desc = "Unsaved changes to Quickfix" })

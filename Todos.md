@@ -14,11 +14,15 @@
 * [x] make presentation of the results
 * [ ] run dynamic analysis over the weekend
     * [ ] The curretn with 180deg has a problem, the MBR is reached even in static analysis
+    * [ ] ran the 180 P90 current ignoring the MBR close to the HDC, it seems to match fairly well the results from Technip
+    * [ ] running the P70 now, ignoring the MBR as well, because the MBR is reached even in static.
 
 ### Notes
- - the CW landing verification starts at Technip's step 21
  - dynamic step is actually step 23
  - NOTE We have lower MBR, which I think is due to the lack of BS at the tether
+ - NOTE adding the bend stiffener does not improve the MBR, only moves it to the tip of the BS.
+ * [ ] IMPORTANT TODO check what is the bending stiffness for the production riser that Technip is using.
+ * [ ] need to check what has been the policy here
 
 
 ## AkerBP Tilje
@@ -35,5 +39,5 @@
     NOTE I have the correct ffl and it matches more of less the bending test - up to a certain curvature that is
 * [x] help houston in the revision of the Hammerhead umbilical
 * [x] Finish the Troll C proposal
-* [ ] Check the proposal for JDR Jotun
+* [x] Check the proposal for JDR Jotun
 
