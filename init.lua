@@ -704,6 +704,7 @@ local function set_project_keymaps()
     -- Set specific keymaps for the first project
     vim.opt.makeprg = "cmake --build build"
     vim.keymap.set("n", "<leader>cp", ":make<CR>", { desc = "Build project A" })
+    -- vim.keymap.set("n", "<leader>xp", ":!./build/Churro_Adventures<CR>")
   elseif cwd:find("path/to/your/second_project") then
     -- Set specific keymaps for the second project
     print("hello2")
