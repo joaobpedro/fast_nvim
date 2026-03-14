@@ -725,18 +725,23 @@ local function normalize_heading_to_anchor(title)
 end
 
 --- Scans the current buffer for a heading and jumps to it
+--- Scans the current buffer for a heading and jumps to it
 local function jump_to_heading(anchor)
     local target_anchor = anchor:gsub("^#", "")
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     
     for i, line in ipairs(lines) do
-        -- Find lines that start with Markdown heading syntax (#, ##, etc.)
         local title = line:match("^#+%s+(.*)$")
         if title then
             local current_anchor = normalize_heading_to_anchor(title)
             if current_anchor == target_anchor then
-                -- Move cursor to that line (1-indexed for rows, 0-indexed for cols)
+                
+                -- NEW: Save the current position to the Jumplist BEFORE moving
+                vim.cmd("normal! m'")
+                
+                -- Move cursor to that line
                 vim.api.nvim_win_set_cursor(0, {i, 0})
+                
                 -- Center the screen for visual comfort
                 vim.cmd("normal! zz")
                 return
