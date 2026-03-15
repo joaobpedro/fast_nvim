@@ -351,42 +351,68 @@ vim.keymap.set('n', '<leader>.', '<cmd>FuzzyFind<CR>', { noremap = true, silent 
 -- ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
 -- AUTOPAIRS
 
-vim.keymap.set('i', '(', '()<Left>', { noremap = true })
-vim.keymap.set('i', '[', '[]<Left>', { noremap = true })
-vim.keymap.set('i', '{', '{}<Left>', { noremap = true })
-vim.keymap.set('i', '"', '""<Left>', { noremap = true })
-vim.keymap.set('i', "'", "''<Left>", { noremap = true })
-vim.keymap.set('i', '`', '``<Left>', { noremap = true })
+local map = vim.keymap.set
+local expr = { expr = true }
 
-vim.keymap.set('i', '{<CR>', '{<CR>}<Esc>O', { noremap = true })
-
-local function skip_or_insert(char)
-    return function()
-        local col = vim.fn.col('.')
-        local line = vim.fn.getline('.')
-        -- Get the character immediately under/after the cursor
-        local next_char = line:sub(col, col)
-        if next_char == char then
-            -- If it matches, just move right (step over)
-            return '<Right>'
-        else
-            -- If not, insert the character normally
-            return char
-        end
-    end
+-- Helper: Get character after cursor
+local function skip(c) 
+    return vim.fn.getline('.'):sub(vim.fn.col('.'), vim.fn.col('.')) == c and "<Right>" or c 
 end
 
--- Apply the type-over logic to closing characters
-vim.keymap.set('i', ')', skip_or_insert(')'), { expr = true, noremap = true })
-vim.keymap.set('i', ']', skip_or_insert(']'), { expr = true, noremap = true })
-vim.keymap.set('i', '}', skip_or_insert('}'), { expr = true, noremap = true })
-vim.keymap.set('i', '"', skip_or_insert('"'), { expr = true, noremap = true })
-vim.keymap.set('i', "'", skip_or_insert("'"), { expr = true, noremap = true })
-vim.keymap.set('i', '`', skip_or_insert('`'), { expr = true, noremap = true })
+-- 1. Simple Openers (Pure speed, no logic)
+map("i", "(", "()<Left>")
+map("i", "[", "[]<Left>")
+map("i", "{", "{}<Left>")
+
+-- 2. Closers (Step over if they exist)
+map("i", ")", function() return skip(")") end, expr)
+map("i", "]", function() return skip("]") end, expr)
+map("i", "}", function() return skip("}") end, expr)
+
+-- 3. Quotes (Step over OR create pair)
+local function quote(c) 
+    return skip(c) == "<Right>" and "<Right>" or c..c.."<Left>" 
+end
+map("i", '"', function() return quote('"') end, expr)
+map("i", "'", function() return quote("'") end, expr)
+map("i", "`", function() return quote("`") end, expr)
+
+-- 4. The C-Style Enter Trick
+map("i", "<CR>", function()
+    local line = vim.fn.getline('.')
+    local col = vim.fn.col('.')
+    -- If cursor is exactly between {}, crack them open
+    if line:sub(col - 1, col) == "{}" then
+        return "<CR><C-o>O"
+    end
+    return "<CR>"
+end, expr)
+
+-- 5. The Backspace Eraser
+map("i", "<BS>", function()
+    local line = vim.fn.getline('.')
+    local col = vim.fn.col('.')
+    local pair = line:sub(col - 1, col)
+    -- If sitting between any empty pair, delete both
+    if pair == "()" or pair == "[]" or pair == "{}" or pair == '""' or pair == "''" or pair == "``" then
+        return "<BS><Right><BS>"
+    end
+    return "<BS>"
+end, expr)
+
+-- surround keymaps
+-- Select text, press ( to get (text)
+vim.keymap.set("x", "(", 'c(<C-r>")<Esc>')
+vim.keymap.set("x", "[", 'c[<C-r>"]<Esc>')
+vim.keymap.set("x", "{", 'c{<C-r>"}<Esc>')
+vim.keymap.set("x", "<", 'c<<C-r>"><Esc>')
+vim.keymap.set("x", '"', 'c"<C-r>""<Esc>')
+vim.keymap.set("x", "'", "c'<C-r>\"'<Esc>")
+
+
 
 -- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
 -- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
-
 vim.lsp.config('clangd',{
     cmd = {'clangd'},
     filetypes = { "c", "cpp", "objc", "objcpp" },
@@ -429,8 +455,6 @@ end
 vim.keymap.set("n", "<M-d>", change_all_occurrences, { desc = "Change all occurrences of word" })
 
 
--- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
---
 
 -- Define the search function
 local function fast_grep(args)
@@ -500,14 +524,6 @@ vim.keymap.set("n", "<leader>ec", function()
 end, { desc = "Edit Neovim config" })
 
 
--- surround keymaps
--- Select text, press ( to get (text)
-vim.keymap.set("x", "(", 'c(<C-r>")<Esc>')
-vim.keymap.set("x", "[", 'c[<C-r>"]<Esc>')
-vim.keymap.set("x", "{", 'c{<C-r>"}<Esc>')
-vim.keymap.set("x", "<", 'c<<C-r>"><Esc>')
-vim.keymap.set("x", '"', 'c"<C-r>""<Esc>')
-vim.keymap.set("x", "'", "c'<C-r>\"'<Esc>")
 
 -- TODO highlight
 
@@ -694,29 +710,7 @@ for _, buf in ipairs(vim.api.nvim_list_bufs()) do
 end
 
 
--- PROJECT specific keymaps
--- Define a function to set project-specific keymaps
-local function set_project_keymaps()
-  -- Get the current working directory
-  local cwd = vim.fn.getcwd()
-  -- Check if the current directory matches your project path
-  if cwd:find("/home/joao/source/01_GameCpp/01_hello_SDL") then
-    -- Set specific keymaps for the first project
-    vim.opt.makeprg = "cmake --build build"
-    vim.keymap.set("n", "<leader>cp", ":make<CR>", { desc = "Build project A" })
-    -- vim.keymap.set("n", "<leader>xp", ":!./build/Churro_Adventures<CR>")
-  elseif cwd:find("path/to/your/second_project") then
-    -- Set specific keymaps for the second project
-    print("hello2")
-  end
-end
-
--- Create an autocmd that runs the function when entering a buffer or changing directory
-vim.api.nvim_create_autocmd({"BufEnter", "DirChanged"}, {
-  group = vim.api.nvim_create_augroup("ProjectKeymapsGroup", { clear = true }),
-  callback = set_project_keymaps,
-})
-
+-- MARKDOWN NAVIGATION
 -- Create a namespace/module for our custom markdown tools
 _G.MarkdownTools = {}
 
@@ -725,7 +719,6 @@ local function normalize_heading_to_anchor(title)
     return title:lower():gsub("%s+", "-"):gsub("[^%w%-]", "")
 end
 
---- Scans the current buffer for a heading and jumps to it
 --- Scans the current buffer for a heading and jumps to it
 local function jump_to_heading(anchor)
     local target_anchor = anchor:gsub("^#", "")
@@ -824,3 +817,90 @@ vim.api.nvim_create_autocmd("FileType", {
         })
     end,
 })
+
+
+-- MICRO HARPOON
+local MicroHarpoon = { marks = {} }
+
+--- Adds current file to the list
+function MicroHarpoon.add()
+    local file = vim.api.nvim_buf_get_name(0)
+    if file == "" then return end
+    
+    -- Prevent duplicates
+    for _, mark in ipairs(MicroHarpoon.marks) do
+        if mark == file then 
+            print("Already marked!") 
+            return 
+        end
+    end
+    
+    MicroHarpoon.marks[#MicroHarpoon.marks + 1] = file
+    print("Harpooned: " .. vim.fn.fnamemodify(file, ":t"))
+end
+
+--- Jumps to a specific index instantly
+function MicroHarpoon.nav(idx)
+    local file = MicroHarpoon.marks[idx]
+    if file then 
+        vim.cmd("edit " .. vim.fn.fnameescape(file)) 
+    end
+end
+
+--- Displays a native, ultra-fast selection menu
+function MicroHarpoon.menu()
+    if #MicroHarpoon.marks == 0 then 
+        print("Harpoon is empty") 
+        return 
+    end
+    
+    -- vim.ui.select hooks into Neovim's native command line or your UI plugin
+    vim.ui.select(MicroHarpoon.marks, {
+        prompt = " Harpoon ",
+        format_item = function(item)
+            return vim.fn.fnamemodify(item, ":~:.") -- Shows clean relative paths
+        end,
+    }, function(choice, idx)
+        if choice then MicroHarpoon.nav(idx) end
+    end)
+end
+
+-- Keymaps
+vim.keymap.set("n", "<leader>a", MicroHarpoon.add, { desc = "Harpoon Add" })
+vim.keymap.set("n", "<leader>h", MicroHarpoon.menu, { desc = "Harpoon Menu" })
+
+vim.keymap.set("n", "<leader>1", function() MicroHarpoon.nav(1) end, { desc = "Harpoon 1" })
+vim.keymap.set("n", "<leader>2", function() MicroHarpoon.nav(2) end, { desc = "Harpoon 2" })
+vim.keymap.set("n", "<leader>3", function() MicroHarpoon.nav(3) end, { desc = "Harpoon 3" })
+vim.keymap.set("n", "<leader>4", function() MicroHarpoon.nav(4) end, { desc = "Harpoon 4" })
+vim.keymap.set("n", "<leader>5", function() MicroHarpoon.nav(4) end, { desc = "Harpoon 5" })
+vim.keymap.set("n", "<leader>6", function() MicroHarpoon.nav(4) end, { desc = "Harpoon 6" })
+vim.keymap.set("n", "<leader>7", function() MicroHarpoon.nav(4) end, { desc = "Harpoon 7" })
+
+
+
+
+
+-- PROJECT specific keymaps
+-- Define a function to set project-specific keymaps
+local function set_project_keymaps()
+  -- Get the current working directory
+  local cwd = vim.fn.getcwd()
+  -- Check if the current directory matches your project path
+  if cwd:find("/home/joao/source/01_GameCpp/01_hello_SDL") then
+    -- Set specific keymaps for the first project
+    vim.opt.makeprg = "cmake --build build"
+    vim.keymap.set("n", "<leader>cp", ":make<CR>", { desc = "Build project A" })
+    -- vim.keymap.set("n", "<leader>xp", ":!./build/Churro_Adventures<CR>")
+  elseif cwd:find("path/to/your/second_project") then
+    -- Set specific keymaps for the second project
+    print("hello2")
+  end
+end
+
+-- Create an autocmd that runs the function when entering a buffer or changing directory
+vim.api.nvim_create_autocmd({"BufEnter", "DirChanged"}, {
+  group = vim.api.nvim_create_augroup("ProjectKeymapsGroup", { clear = true }),
+  callback = set_project_keymaps,
+})
+
