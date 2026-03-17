@@ -454,8 +454,6 @@ end
 -- Keymap: Press <leader>ra (Rename All)
 vim.keymap.set("n", "<M-d>", change_all_occurrences, { desc = "Change all occurrences of word" })
 
-
-
 -- Define the search function
 local function fast_grep(args)
   local search_term = args.args
@@ -541,9 +539,9 @@ local function highlight_keywords()
   end
 
   -- Add matches for specific keywords
-  vim.fn.matchadd("CustomImpo", [[\v<(FIXME|WARNING|IMPORTANT)>]])
-  vim.fn.matchadd("CustomTodo", [[\v<(TODO|OPTIMIZE)>]])
-  vim.fn.matchadd("CustomNote", [[\v<(NOTE|INFO|HACK|HARDCODED)>]])
+  vim.fn.matchadd("CustomImpo", [[\v<(FIXME|IMPORTANT)>]])
+  vim.fn.matchadd("CustomTodo", [[\v<(TODO|WARNING)>]])
+  vim.fn.matchadd("CustomNote", [[\v<(NOTE|HARDCODED)>]])
 end
 
 -- Run the function whenever a buffer is entered

@@ -14,8 +14,9 @@
 * [x] make presentation of the results
 * [ ] run dynamic analysis over the weekend
     * [ ] The curretn with 180deg has a problem, the MBR is reached even in static analysis
-    * [ ] ran the 180 P90 current ignoring the MBR close to the HDC, it seems to match fairly well the results from Technip
-    * [ ] running the P70 now, ignoring the MBR as well, because the MBR is reached even in static.
+    * [ ] IMPORTANT need to check what is the bending stiffness used in technips analysis
+    * [x] ran the 180 P90 current ignoring the MBR close to the HDC, it seems to match fairly well the results from Technip
+    * [x] running the P70 now, ignoring the MBR as well, because the MBR is reached even in static.
 
 ### Notes
  - dynamic step is actually step 23
@@ -26,8 +27,9 @@
 
 
 ## AkerBP Tilje
-* [ ] go throught all data and record whats missing
+* [x] go throught all data and record whats missing
 * [x] email sent with the missing data
+* [x] IMPORTANT Start build the model -> make sure I do it today
 
 
 ## General
