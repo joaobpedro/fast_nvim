@@ -3,6 +3,7 @@
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+local transparency = false
 
 vim.opt.backup = false
 -- Set to true if you have a Nerd Font installed and selected in the terminal
@@ -23,16 +24,11 @@ vim.opt.wrap = false
 
 -- Ensure the statusline is always visible
 vim.opt.laststatus = 2
--- Set the statusline to include the full file path
--- vim.opt.statusline = "%F"
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
 
--- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
+-- sync clipboard with the system
 vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 
 -- Enable break indent
@@ -126,6 +122,16 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 --set theme
 vim.cmd("colorscheme naysayer")
 
+if transparency then
+    vim.opt.termguicolors = true
+
+    vim.cmd("hi Normal guibg=NONE ctermbg=NONE")
+    vim.cmd("hi NonText guibg=NONE ctermbg=NONE")
+
+    vim.cmd("hi NormalFloat guibg=NONE ctermbg=NONE") -- for floating windows
+    vim.cmd("hi CursorLine guibg=NONE ctermbg=NONE") -- for the current line highlight
+end
+
 -- function to toggle line numbers
 local toggle_number = function() 
  vim.o.number = not vim.o.number
@@ -157,8 +163,8 @@ vim.keymap.set("v", "<M-j>", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "<M-k>", ":m '<-2<CR>gv=gv")
 vim.keymap.set("x", "<leader>p", '"_dP')
 
--- ------------------------------------------------
--- ------------------------------------------------
+-- =============================================================================================
+-- =============================================================================================
 -- ADD CHECK MARK
 local function toggle_markdown_smart()
     local line = vim.api.nvim_get_current_line()
@@ -206,6 +212,8 @@ end
 vim.keymap.set({"n", "i"}, "<M-l>", remove_markdown_completely, { desc = "Remove Bullet and Checkbox" })
 
 
+-- =============================================================================================
+-- =============================================================================================
 -- TABLE FORMAT
 local gmatch = string.gmatch
 local match = string.match
@@ -294,9 +302,9 @@ end, { range = true, desc = "Format Markdown Table" })
 
 vim.keymap.set("v", "<leader>tf", ":FormatTable<CR>", { desc = "Format selected table" })
 
--- ================================================================
--- ================================================================
--- Create a custom command to trigger the finder
+-- =============================================================================================
+-- =============================================================================================
+-- FUZZY FINDER
 
 vim.api.nvim_create_user_command('FuzzyFind', function()
     local tmpfile = vim.fn.tempname()
@@ -347,8 +355,8 @@ vim.api.nvim_create_user_command('FuzzyFind', function()
 end, { desc = 'Fast Fuzzy Finder via CLI fzf' })
 vim.keymap.set('n', '<leader>.', '<cmd>FuzzyFind<CR>', { noremap = true, silent = true, desc = 'Fuzzy Find Files' })
 
--- ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
--- ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
+-- =============================================================================================
+-- =============================================================================================
 -- AUTOPAIRS
 
 local map = vim.keymap.set
@@ -411,8 +419,9 @@ vim.keymap.set("x", "'", "c'<C-r>\"'<Esc>")
 
 
 
--- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
--- LSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSPLSP
+-- =============================================================================================
+-- =============================================================================================
+-- LSP CONFIG
 vim.lsp.config('clangd',{
     cmd = {'clangd'},
     filetypes = { "c", "cpp", "objc", "objcpp" },
@@ -436,6 +445,8 @@ vim.lsp.enable('lua_ls')
 
 vim.keymap.set('i', '<M-c>', '<C-x><C-o>', { noremap = true, silent = true })
 
+-- =============================================================================================
+-- =============================================================================================
 -- this is the alt-d behavior
 -- Function to prep a global search and replace for the word under the cursor
 local function change_all_occurrences()
@@ -451,10 +462,11 @@ local function change_all_occurrences()
   )
 end
 
--- Keymap: Press <leader>ra (Rename All)
 vim.keymap.set("n", "<M-d>", change_all_occurrences, { desc = "Change all occurrences of word" })
 
--- Define the search function
+-- =============================================================================================
+-- =============================================================================================
+-- String searh in the project
 local function fast_grep(args)
   local search_term = args.args
   if search_term == "" then
@@ -511,9 +523,9 @@ vim.keymap.set("n", "<M-n>", ":cnext<CR>zz", { desc = "Next search result" })
 
 
 
---[[  
+-- =============================================================================================
+-- =============================================================================================
 --  THIS IS THE SHORTCUT TO THE CONFIG
---]]
 -- Open Neovim configuration file from anywhere
 vim.keymap.set("n", "<leader>ec", function()
   -- Get the path to your config directory and append '/init.lua'
@@ -523,6 +535,8 @@ end, { desc = "Edit Neovim config" })
 
 
 
+-- =============================================================================================
+-- =============================================================================================
 -- TODO highlight
 
 -- Create a custom highlight group for keywords
@@ -562,6 +576,8 @@ end
 vim.keymap.set("n", "<leader>td", Todos, {desc = "Global todos files, kepth in the config dir"})
 
 
+-- =============================================================================================
+-- =============================================================================================
 -- NEOVIDE CONFIG
 if vim.g.neovide then
 	vim.o.guifont = "JetBrainsMono Nerd Font:h13" -- text below applies for VimScript
@@ -575,10 +591,9 @@ if vim.g.neovide then
 	vim.g.neovide_no_idle = true
 end
 
--- EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
--- EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
--- (EXPERIMENTAL FEATURES)
---
+-- =============================================================================================
+-- =============================================================================================
+-- NOTEPAD++ style changes tracker
 local ns = vim.api.nvim_create_namespace("npp_tracker")
 
 -- We need two caches to mimic Notepad++
@@ -708,6 +723,8 @@ for _, buf in ipairs(vim.api.nvim_list_bufs()) do
 end
 
 
+-- =============================================================================================
+-- =============================================================================================
 -- MARKDOWN NAVIGATION
 -- Create a namespace/module for our custom markdown tools
 _G.MarkdownTools = {}
@@ -826,6 +843,8 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 
+-- =============================================================================================
+-- =============================================================================================
 -- MICRO HARPOON
 local MicroHarpoon = { marks = {} }
 
@@ -885,9 +904,8 @@ vim.keymap.set("n", "<leader>6", function() MicroHarpoon.nav(4) end, { desc = "H
 vim.keymap.set("n", "<leader>7", function() MicroHarpoon.nav(4) end, { desc = "Harpoon 7" })
 
 
-
-
-
+-- =============================================================================================
+-- =============================================================================================
 -- PROJECT specific keymaps
 -- Define a function to set project-specific keymaps
 local function set_project_keymaps()
@@ -909,16 +927,4 @@ end
 vim.api.nvim_create_autocmd({"BufEnter", "DirChanged"}, {
   group = vim.api.nvim_create_augroup("ProjectKeymapsGroup", { clear = true }),
   callback = set_project_keymaps,
-})
-
--- TREESITTER CONFIG
---
--- Create an augroup for our native Tree-sitter engine
-
--- Automatically start Tree-sitter for C and C++
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = { "c", "cpp" , "lua"},
-    callback = function(args)
-        pcall(vim.treesitter.start, args.buf)
-    end,
 })
