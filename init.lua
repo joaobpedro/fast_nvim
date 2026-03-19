@@ -770,6 +770,15 @@ function _G.MarkdownTools.follow_link()
         return
     end
 
+    -- NEW: Clean up the target string to handle spaces
+    -- 1. Strip angle brackets if the user wrote [text](<my file.md>)
+    target = target:match("^<(.*)>$") or target
+    
+    -- 2. Decode URL-encoded characters (turns "%20" into an actual space)
+    target = target:gsub("%%(%x%x)", function(hex)
+        return string.char(tonumber(hex, 16))
+    end)
+
     -- 2. Route the target based on its type
     if target:match("^http[s]?://") then
         -- Web URL: Open in the system's default web browser
@@ -902,3 +911,14 @@ vim.api.nvim_create_autocmd({"BufEnter", "DirChanged"}, {
   callback = set_project_keymaps,
 })
 
+-- TREESITTER CONFIG
+--
+-- Create an augroup for our native Tree-sitter engine
+
+-- Automatically start Tree-sitter for C and C++
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = { "c", "cpp" , "lua"},
+    callback = function(args)
+        pcall(vim.treesitter.start, args.buf)
+    end,
+})

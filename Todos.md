@@ -1,4 +1,9 @@
-# Global TODOS
+# Global TODOs
+
+## TOC
+1. [Rosebank](#rosebank)
+2. [AkerBP Tilje](#akerbp-tilje)
+3. [General](#general)
 
 ---
 
@@ -12,11 +17,20 @@
     * [x] compare MBR - what kind of stiffness is TPFMC using
     * [x] add the BS at tether
 * [x] make presentation of the results
-* [ ] run dynamic analysis over the weekend
-    * [ ] The curretn with 180deg has a problem, the MBR is reached even in static analysis
-    * [ ] IMPORTANT need to check what is the bending stiffness used in technips analysis
+* [ ] TODO review transpooling report
+* [x] run dynamic analysis over the weekend
+    * [x] The curretn with 180deg has a problem, the MBR is reached even in static analysis
+    * [x] IMPORTANT need to check what is the bending stiffness used in technips analysis
     * [x] ran the 180 P90 current ignoring the MBR close to the HDC, it seems to match fairly well the results from Technip
     * [x] running the P70 now, ignoring the MBR as well, because the MBR is reached even in static.
+
+## Results
+NOTE
+* [ ] I could verify technips results more or less
+    - the difference in static MBR is important to the sea states since this is the critical variable as far as could see
+* [ ] increasing the MBR does not improve the results
+    - this is due to the fact that the line becomes more horizontal and therefor more sensitive to the load of the CW
+* [ ]  on the other hand, results pending, but decreasing the layback seems to improve the MBR, we will see how the compression  works
 
 ### Notes
  - dynamic step is actually step 23
@@ -25,12 +39,16 @@
  * [ ] IMPORTANT TODO check what is the bending stiffness for the production riser that Technip is using.
  * [ ] need to check what has been the policy here
 
+---
 
 ## AkerBP Tilje
+* [ ] [Project TODOs](<C:/Users/joaop/OneDrive - KONGSBERG/00_Projects/08_AkerBP_Tilje/TODOs.md>)
 * [x] go throught all data and record whats missing
 * [x] email sent with the missing data
 * [x] IMPORTANT Start build the model -> make sure I do it today
+* [x] prepare a slide deck for tomorrow meeting
 
+---
 
 ## General
 * [x] help houston to make the uflex runs
