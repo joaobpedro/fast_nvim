@@ -36,8 +36,7 @@ NOTE
  - dynamic step is actually step 23
  - NOTE We have lower MBR, which I think is due to the lack of BS at the tether
  - NOTE adding the bend stiffener does not improve the MBR, only moves it to the tip of the BS.
- * [ ] IMPORTANT TODO check what is the bending stiffness for the production riser that Technip is using.
- * [ ] need to check what has been the policy here
+ * [x] IMPORTANT TODO check what is the bending stiffness for the production riser that Technip is using.
 
 ---
 
