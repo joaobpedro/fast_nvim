@@ -134,8 +134,8 @@ end
 
 -- function to toggle line numbers
 local toggle_number = function() 
- vim.o.number = not vim.o.number
- vim.o.relativenumber = not vim.o.relativenumber
+    vim.o.number = not vim.o.number
+    vim.o.relativenumber = not vim.o.relativenumber
 end
 vim.keymap.set('n', '<leader>tn', toggle_number)
 
@@ -178,7 +178,7 @@ local function toggle_markdown_smart()
     else
         local indent = line:match("^%s*")
         local content = line:gsub("^%s*", ""):gsub("^[*-] ", "", 1)
-        line = indent .. "* [ ] " .. content
+        line = indent .. "- [ ] " .. content
     end
 
     vim.api.nvim_set_current_line(line)
@@ -191,7 +191,7 @@ vim.keymap.set({"n", "i"}, "<M-x>", toggle_markdown_smart, { desc = "Toggle Chec
 
 local function remove_markdown_completely()
     local line = vim.api.nvim_get_current_line()
-    
+
     -- 1. Capture the initial indentation (%s*)
     -- 2. Match (but don't capture) the bullet [*-] and the checkbox \[.[\]]
     -- 3. Keep everything after that (%s*(.*))
@@ -430,16 +430,16 @@ vim.lsp.config('clangd',{
 vim.lsp.enable('clangd')
 
 vim.lsp.config['lua_ls'] = {
-  cmd = { 'lua-language-server' },
-  filetypes = { 'lua' },
-  root_markers = { { '.luarc.json', '.luarc.jsonc' }, '.git' },
-  settings = {
-    Lua = {
-      runtime = {
-        version = 'LuaJIT',
-      }
+    cmd = { 'lua-language-server' },
+    filetypes = { 'lua' },
+    root_markers = { { '.luarc.json', '.luarc.jsonc' }, '.git' },
+    settings = {
+        Lua = {
+            runtime = {
+                version = 'LuaJIT',
+            }
+        }
     }
-  }
 }
 vim.lsp.enable('lua_ls')
 
@@ -450,16 +450,16 @@ vim.keymap.set('i', '<M-c>', '<C-x><C-o>', { noremap = true, silent = true })
 -- this is the alt-d behavior
 -- Function to prep a global search and replace for the word under the cursor
 local function change_all_occurrences()
-  local word = vim.fn.expand("<cword>") -- Get the word under cursor
-  -- Prep the command: %s/old_word/|/g (the | is where you type)
-  local cmd = ":%s/" .. word .. "//g<Left><Left>"
-  
-  -- Feed the keys to the command line
-  vim.api.nvim_feedkeys(
-    vim.api.nvim_replace_termcodes(cmd, true, false, true), 
-    "n", 
-    false
-  )
+    local word = vim.fn.expand("<cword>") -- Get the word under cursor
+    -- Prep the command: %s/old_word/|/g (the | is where you type)
+    local cmd = ":%s/" .. word .. "//g<Left><Left>"
+
+    -- Feed the keys to the command line
+    vim.api.nvim_feedkeys(
+        vim.api.nvim_replace_termcodes(cmd, true, false, true), 
+        "n", 
+        false
+    )
 end
 
 vim.keymap.set("n", "<M-d>", change_all_occurrences, { desc = "Change all occurrences of word" })
@@ -468,33 +468,33 @@ vim.keymap.set("n", "<M-d>", change_all_occurrences, { desc = "Change all occurr
 -- =============================================================================================
 -- String searh in the project
 local function fast_grep(args)
-  local search_term = args.args
-  if search_term == "" then
-    print("Usage: :Grep <search_term>")
-    return
-  end
+    local search_term = args.args
+    if search_term == "" then
+        print("Usage: :Grep <search_term>")
+        return
+    end
 
-  -- We use 'rg' (ripgrep) if available, otherwise fallback to 'grep'
-  local cmd = vim.fn.executable("rg") == 1 
+    -- We use 'rg' (ripgrep) if available, otherwise fallback to 'grep'
+    local cmd = vim.fn.executable("rg") == 1 
     and { "rg", "--vimgrep", "--smart-case", search_term }
     or { "grep", "-rnE", search_term, "." }
 
-  print("Searching for: " .. search_term .. "...")
+    print("Searching for: " .. search_term .. "...")
 
-  -- Run asynchronously
-  vim.system(cmd, { text = true }, function(obj)
-    vim.schedule(function()
-      if obj.code ~= 0 or obj.stdout == "" then
-        print("No matches found for: " .. search_term)
-        return
-      end
+    -- Run asynchronously
+    vim.system(cmd, { text = true }, function(obj)
+        vim.schedule(function()
+            if obj.code ~= 0 or obj.stdout == "" then
+                print("No matches found for: " .. search_term)
+                return
+            end
 
-      -- Populate the quickfix list and open it
-      vim.fn.setqflist({}, 'r', { title = "Search: " .. search_term, lines = vim.split(obj.stdout, "\n") })
-      vim.cmd("copen")
-      print("Search complete. Found " .. #vim.split(obj.stdout, "\n") .. " matches.")
+            -- Populate the quickfix list and open it
+            vim.fn.setqflist({}, 'r', { title = "Search: " .. search_term, lines = vim.split(obj.stdout, "\n") })
+            vim.cmd("copen")
+            print("Search complete. Found " .. #vim.split(obj.stdout, "\n") .. " matches.")
+        end)
     end)
-  end)
 end
 
 -- Create the user command
@@ -503,18 +503,18 @@ vim.api.nvim_create_user_command("Grep", fast_grep, { nargs = 1 })
 
 -- 1. Press <leader>fs (Find String) to type your search
 vim.keymap.set("n", "<leader>fs", function()
-  local input = vim.fn.input("Search for: ")
-  if input ~= "" then
-    vim.cmd("Grep " .. input)
-  end
+    local input = vim.fn.input("Search for: ")
+    if input ~= "" then
+        vim.cmd("Grep " .. input)
+    end
 end, { desc = "Search for string in project" })
 
 -- 2. Press <leader>fw (Find Word) to search for the word under the cursor
 vim.keymap.set("n", "<leader>fw", function()
-  local word = vim.fn.expand("<cword>")
-  if word ~= "" then
-    vim.cmd("Grep " .. word)
-  end
+    local word = vim.fn.expand("<cword>")
+    if word ~= "" then
+        vim.cmd("Grep " .. word)
+    end
 end, { desc = "Search word under cursor" })
 
 -- Navigate search results without leaving your file
@@ -528,9 +528,9 @@ vim.keymap.set("n", "<M-n>", ":cnext<CR>zz", { desc = "Next search result" })
 --  THIS IS THE SHORTCUT TO THE CONFIG
 -- Open Neovim configuration file from anywhere
 vim.keymap.set("n", "<leader>ec", function()
-  -- Get the path to your config directory and append '/init.lua'
-  local config_path = vim.fn.stdpath("config") .. "/init.lua"
-  vim.cmd("edit " .. config_path)
+    -- Get the path to your config directory and append '/init.lua'
+    local config_path = vim.fn.stdpath("config") .. "/init.lua"
+    vim.cmd("edit " .. config_path)
 end, { desc = "Edit Neovim config" })
 
 
@@ -545,22 +545,22 @@ vim.api.nvim_set_hl(0, "CustomTodo", { fg = "#000000", bg = "#FFCC00", bold = tr
 vim.api.nvim_set_hl(0, "CustomNote", { fg = "#000000", bg = "#00CCFF", bold = true })
 
 local function highlight_keywords()
-  -- Clear existing matches to prevent stacking
-  for _, match in ipairs(vim.fn.getmatches()) do
-    if match.group == "CustomTodo" or match.group == "CustomNote" or match.group == "CustomImpo" then
-      vim.fn.matchdelete(match.id)
+    -- Clear existing matches to prevent stacking
+    for _, match in ipairs(vim.fn.getmatches()) do
+        if match.group == "CustomTodo" or match.group == "CustomNote" or match.group == "CustomImpo" then
+            vim.fn.matchdelete(match.id)
+        end
     end
-  end
 
-  -- Add matches for specific keywords
-  vim.fn.matchadd("CustomImpo", [[\v<(FIXME|IMPORTANT)>]])
-  vim.fn.matchadd("CustomTodo", [[\v<(TODO|WARNING)>]])
-  vim.fn.matchadd("CustomNote", [[\v<(NOTE|HARDCODED)>]])
+    -- Add matches for specific keywords
+    vim.fn.matchadd("CustomImpo", [[\v<(FIXME|IMPORTANT)>]])
+    vim.fn.matchadd("CustomTodo", [[\v<(TODO|WARNING)>]])
+    vim.fn.matchadd("CustomNote", [[\v<(NOTE|HARDCODED)>]])
 end
 
 -- Run the function whenever a buffer is entered
 vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
-  callback = highlight_keywords,
+    callback = highlight_keywords,
 })
 
 -- function to open and edit the Global Todos
@@ -580,15 +580,15 @@ vim.keymap.set("n", "<leader>td", Todos, {desc = "Global todos files, kepth in t
 -- =============================================================================================
 -- NEOVIDE CONFIG
 if vim.g.neovide then
-	vim.o.guifont = "JetBrainsMono Nerd Font:h13" -- text below applies for VimScript
-	vim.g.neovide_disable_all_animations = true
-	vim.g.neovide_cursor_trail_size = 0
-	vim.g.neovide_cursor_vfx_mode = ""
-	vim.g.neovide_cursor_animation_length = 0.0
-	vim.g.neovide_position_animation_length = 0.0
-	vim.g.neovide_scroll_animation_length = 0.0
-	vim.g.neovide_scroll_animation_far_lines = 0
-	vim.g.neovide_no_idle = true
+    vim.o.guifont = "JetBrainsMono Nerd Font:h13" -- text below applies for VimScript
+    vim.g.neovide_disable_all_animations = true
+    vim.g.neovide_cursor_trail_size = 0
+    vim.g.neovide_cursor_vfx_mode = ""
+    vim.g.neovide_cursor_animation_length = 0.0
+    vim.g.neovide_position_animation_length = 0.0
+    vim.g.neovide_scroll_animation_length = 0.0
+    vim.g.neovide_scroll_animation_far_lines = 0
+    vim.g.neovide_no_idle = true
 end
 
 -- =============================================================================================
@@ -623,14 +623,14 @@ end
 -- 3. Core logic: Compare the live buffer against BOTH caches
 local function update_npp_signs(buf)
     if not vim.api.nvim_buf_is_valid(buf) then return end
-    
+
     local t_open  = opened_cache[buf]
     local t_saved = saved_cache[buf]
     if not t_open or not t_saved then return end 
 
     local curr_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
     local t_curr = table.concat(curr_lines, "\n")
-    
+
     vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
 
     -- Track the state of each line in a table: line_num -> { state, char }
@@ -738,19 +738,19 @@ end
 local function jump_to_heading(anchor)
     local target_anchor = anchor:gsub("^#", "")
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    
+
     for i, line in ipairs(lines) do
         local title = line:match("^#+%s+(.*)$")
         if title then
             local current_anchor = normalize_heading_to_anchor(title)
             if current_anchor == target_anchor then
-                
+
                 -- NEW: Save the current position to the Jumplist BEFORE moving
                 vim.cmd("normal! m'")
-                
+
                 -- Move cursor to that line
                 vim.api.nvim_win_set_cursor(0, {i, 0})
-                
+
                 -- Center the screen for visual comfort
                 vim.cmd("normal! zz")
                 return
@@ -773,7 +773,7 @@ function _G.MarkdownTools.follow_link()
         -- Lua pattern to match [text](target)
         local s, e, _, link = string.find(line, "%[(.-)%]%((.-)%)", start_idx)
         if not s then break end
-        
+
         -- Check if the cursor's column falls inside this specific link block
         if col >= s and col <= e then
             target = link
@@ -790,7 +790,7 @@ function _G.MarkdownTools.follow_link()
     -- NEW: Clean up the target string to handle spaces
     -- 1. Strip angle brackets if the user wrote [text](<my file.md>)
     target = target:match("^<(.*)>$") or target
-    
+
     -- 2. Decode URL-encoded characters (turns "%20" into an actual space)
     target = target:gsub("%%(%x%x)", function(hex)
         return string.char(tonumber(hex, 16))
@@ -800,9 +800,9 @@ function _G.MarkdownTools.follow_link()
     if target:match("^http[s]?://") then
         -- Web URL: Open in the system's default web browser
         local cmd = vim.fn.has("mac") == 1 and "open" 
-                 or vim.fn.has("unix") == 1 and "xdg-open" 
-                 or vim.fn.has("win32") == 1 and "start"
-        
+        or vim.fn.has("unix") == 1 and "xdg-open" 
+        or vim.fn.has("win32") == 1 and "start"
+
         if cmd then
             vim.fn.jobstart({cmd, target}, { detach = true })
         else
@@ -852,7 +852,7 @@ local MicroHarpoon = { marks = {} }
 function MicroHarpoon.add()
     local file = vim.api.nvim_buf_get_name(0)
     if file == "" then return end
-    
+
     -- Prevent duplicates
     for _, mark in ipairs(MicroHarpoon.marks) do
         if mark == file then 
@@ -860,7 +860,7 @@ function MicroHarpoon.add()
             return 
         end
     end
-    
+
     MicroHarpoon.marks[#MicroHarpoon.marks + 1] = file
     print("Harpooned: " .. vim.fn.fnamemodify(file, ":t"))
 end
@@ -879,7 +879,7 @@ function MicroHarpoon.menu()
         print("Harpoon is empty") 
         return 
     end
-    
+
     -- vim.ui.select hooks into Neovim's native command line or your UI plugin
     vim.ui.select(MicroHarpoon.marks, {
         prompt = " Harpoon ",
@@ -909,22 +909,22 @@ vim.keymap.set("n", "<leader>7", function() MicroHarpoon.nav(4) end, { desc = "H
 -- PROJECT specific keymaps
 -- Define a function to set project-specific keymaps
 local function set_project_keymaps()
-  -- Get the current working directory
-  local cwd = vim.fn.getcwd()
-  -- Check if the current directory matches your project path
-  if cwd:find("/home/joao/source/01_GameCpp/01_hello_SDL") then
-    -- Set specific keymaps for the first project
-    vim.opt.makeprg = "cmake --build build"
-    vim.keymap.set("n", "<leader>cp", ":make<CR>", { desc = "Build project A" })
-    -- vim.keymap.set("n", "<leader>xp", ":!./build/Churro_Adventures<CR>")
-  elseif cwd:find("path/to/your/second_project") then
-    -- Set specific keymaps for the second project
-    print("hello2")
-  end
+    -- Get the current working directory
+    local cwd = vim.fn.getcwd()
+    -- Check if the current directory matches your project path
+    if cwd:find("/home/joao/source/01_GameCpp/01_hello_SDL") then
+        -- Set specific keymaps for the first project
+        vim.opt.makeprg = "cmake --build build"
+        vim.keymap.set("n", "<leader>cp", ":make<CR>", { desc = "Build project A" })
+        -- vim.keymap.set("n", "<leader>xp", ":!./build/Churro_Adventures<CR>")
+    elseif cwd:find("path/to/your/second_project") then
+        -- Set specific keymaps for the second project
+        print("hello2")
+    end
 end
 
 -- Create an autocmd that runs the function when entering a buffer or changing directory
 vim.api.nvim_create_autocmd({"BufEnter", "DirChanged"}, {
-  group = vim.api.nvim_create_augroup("ProjectKeymapsGroup", { clear = true }),
-  callback = set_project_keymaps,
+    group = vim.api.nvim_create_augroup("ProjectKeymapsGroup", { clear = true }),
+    callback = set_project_keymaps,
 })
