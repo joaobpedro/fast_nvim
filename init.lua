@@ -120,7 +120,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 --set theme
-vim.cmd("colorscheme naysayer")
+-- vim.cmd("colorscheme naysayer")
 
 if transparency then
     vim.opt.termguicolors = true
@@ -422,27 +422,27 @@ vim.keymap.set("x", "'", "c'<C-r>\"'<Esc>")
 -- =============================================================================================
 -- =============================================================================================
 -- LSP CONFIG
-vim.lsp.config('clangd',{
-    cmd = {'clangd'},
-    filetypes = { "c", "cpp", "objc", "objcpp" },
-    name = 'clangd',
-})
-vim.lsp.enable('clangd')
-
-vim.lsp.config['lua_ls'] = {
-    cmd = { 'lua-language-server' },
-    filetypes = { 'lua' },
-    root_markers = { { '.luarc.json', '.luarc.jsonc' }, '.git' },
-    settings = {
-        Lua = {
-            runtime = {
-                version = 'LuaJIT',
-            }
-        }
-    }
-}
-vim.lsp.enable('lua_ls')
-
+-- vim.lsp.config('clangd',{
+--     cmd = {'clangd'},
+--     filetypes = { "c", "cpp", "objc", "objcpp" },
+--     name = 'clangd',
+-- })
+-- vim.lsp.enable('clangd')
+--
+-- vim.lsp.config['lua_ls'] = {
+--     cmd = { 'lua-language-server' },
+--     filetypes = { 'lua' },
+--     root_markers = { { '.luarc.json', '.luarc.jsonc' }, '.git' },
+--     settings = {
+--         Lua = {
+--             runtime = {
+--                 version = 'LuaJIT',
+--             }
+--         }
+--     }
+-- }
+-- vim.lsp.enable('lua_ls')
+--
 vim.keymap.set('i', '<M-c>', '<C-x><C-o>', { noremap = true, silent = true })
 
 -- =============================================================================================
@@ -467,57 +467,57 @@ vim.keymap.set("n", "<M-d>", change_all_occurrences, { desc = "Change all occurr
 -- =============================================================================================
 -- =============================================================================================
 -- String searh in the project
-local function fast_grep(args)
-    local search_term = args.args
-    if search_term == "" then
-        print("Usage: :Grep <search_term>")
-        return
-    end
-
-    -- We use 'rg' (ripgrep) if available, otherwise fallback to 'grep'
-    local cmd = vim.fn.executable("rg") == 1 
-    and { "rg", "--vimgrep", "--smart-case", search_term }
-    or { "grep", "-rnE", search_term, "." }
-
-    print("Searching for: " .. search_term .. "...")
-
-    -- Run asynchronously
-    vim.system(cmd, { text = true }, function(obj)
-        vim.schedule(function()
-            if obj.code ~= 0 or obj.stdout == "" then
-                print("No matches found for: " .. search_term)
-                return
-            end
-
-            -- Populate the quickfix list and open it
-            vim.fn.setqflist({}, 'r', { title = "Search: " .. search_term, lines = vim.split(obj.stdout, "\n") })
-            vim.cmd("copen")
-            print("Search complete. Found " .. #vim.split(obj.stdout, "\n") .. " matches.")
-        end)
-    end)
-end
-
--- Create the user command
-vim.api.nvim_create_user_command("Grep", fast_grep, { nargs = 1 })
-
-
--- 1. Press <leader>fs (Find String) to type your search
-vim.keymap.set("n", "<leader>fs", function()
-    local input = vim.fn.input("Search for: ")
-    if input ~= "" then
-        vim.cmd("Grep " .. input)
-    end
-end, { desc = "Search for string in project" })
-
--- 2. Press <leader>fw (Find Word) to search for the word under the cursor
-vim.keymap.set("n", "<leader>fw", function()
-    local word = vim.fn.expand("<cword>")
-    if word ~= "" then
-        vim.cmd("Grep " .. word)
-    end
-end, { desc = "Search word under cursor" })
-
--- Navigate search results without leaving your file
+-- local function fast_grep(args)
+--     local search_term = args.args
+--     if search_term == "" then
+--         print("Usage: :Grep <search_term>")
+--         return
+--     end
+--
+--     -- We use 'rg' (ripgrep) if available, otherwise fallback to 'grep'
+--     local cmd = vim.fn.executable("rg") == 1 
+--     and { "rg", "--vimgrep", "--smart-case", search_term }
+--     or { "grep", "-rnE", search_term, "." }
+--
+--     print("Searching for: " .. search_term .. "...")
+--
+--     -- Run asynchronously
+--     vim.system(cmd, { text = true }, function(obj)
+--         vim.schedule(function()
+--             if obj.code ~= 0 or obj.stdout == "" then
+--                 print("No matches found for: " .. search_term)
+--                 return
+--             end
+--
+--             -- Populate the quickfix list and open it
+--             vim.fn.setqflist({}, 'r', { title = "Search: " .. search_term, lines = vim.split(obj.stdout, "\n") })
+--             vim.cmd("copen")
+--             print("Search complete. Found " .. #vim.split(obj.stdout, "\n") .. " matches.")
+--         end)
+--     end)
+-- end
+--
+-- -- Create the user command
+-- vim.api.nvim_create_user_command("Grep", fast_grep, { nargs = 1 })
+--
+--
+-- -- 1. Press <leader>fs (Find String) to type your search
+-- vim.keymap.set("n", "<leader>fs", function()
+--     local input = vim.fn.input("Search for: ")
+--     if input ~= "" then
+--         vim.cmd("Grep " .. input)
+--     end
+-- end, { desc = "Search for string in project" })
+--
+-- -- 2. Press <leader>fw (Find Word) to search for the word under the cursor
+-- vim.keymap.set("n", "<leader>fw", function()
+--     local word = vim.fn.expand("<cword>")
+--     if word ~= "" then
+--         vim.cmd("Grep " .. word)
+--     end
+-- end, { desc = "Search word under cursor" })
+--
+-- -- Navigate search results without leaving your file
 vim.keymap.set("n", "<M-p>", ":cprev<CR>zz", { desc = "Previous search result" })
 vim.keymap.set("n", "<M-n>", ":cnext<CR>zz", { desc = "Next search result" })
 
@@ -928,3 +928,28 @@ vim.api.nvim_create_autocmd({"BufEnter", "DirChanged"}, {
     group = vim.api.nvim_create_augroup("ProjectKeymapsGroup", { clear = true }),
     callback = set_project_keymaps,
 })
+
+--- A lightning-fast, zero-plugin file finder
+local function find_project_files()
+    -- Run 'git ls-files' in the background to get a clean list of project files
+    local files = vim.fn.systemlist("git ls-files")
+    
+    -- If we aren't in a git repo, systemlist will return an error code
+    if vim.v.shell_error ~= 0 then
+        vim.notify("Not a Git repository. Fallback to :find", vim.log.levels.WARN)
+        return
+    end
+
+    -- Pass the list of files into Neovim's native selection UI
+    vim.ui.select(files, {
+        prompt = " Find File ",
+    }, function(choice)
+        -- This callback runs when you press Enter on a file
+        if choice then
+            vim.cmd("edit " .. vim.fn.fnameescape(choice))
+        end
+    end)
+end
+
+-- Bind it to <leader>f (or whatever key you prefer)
+vim.keymap.set("n", "<leader>ff", find_project_files, { desc = "Find Project Files" })
